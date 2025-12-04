@@ -6,6 +6,7 @@ import {
   Pressable,
   Dimensions,
   StatusBar,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -26,7 +27,11 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onContinueAsGuest, onSign
       {/* Logo e Título */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
-          <Icon name="book-outline" size={50} color={colors.accent.primary} />
+          <Image
+            source={require('../../assets/images/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
         </View>
         <Text style={styles.title}>MindinLine</Text>
         <Text style={styles.subtitle}>
@@ -136,6 +141,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 20,
     elevation: 10,
+    overflow: 'hidden',
+  },
+  logo: {
+    width: '100%',
+    height: '100%',
   },
   title: {
     fontSize: typography.fontSize['3xl'],
@@ -187,7 +197,6 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     marginTop: 'auto',
-    paddingBottom: spacing.lg,
   },
   primaryButton: {
     flexDirection: 'row',

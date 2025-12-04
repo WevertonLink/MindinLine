@@ -17,6 +17,7 @@ import {
 } from '../features/tasks/utils';
 import { saveTasks, loadTasks } from '../services/storage';
 import { addTimelineActivity } from '../services/timelineService';
+import { useSettings } from './SettingsContext';
 
 // ==========================================
 // ✅ TASKS CONTEXT
@@ -65,6 +66,7 @@ interface TasksProviderProps {
 }
 
 export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
+  const { settings } = useSettings();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [stats, setStats] = useState<TasksStats>({
     totalTasks: 0,
@@ -79,15 +81,17 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
   });
   const [loading, setLoading] = useState(true);
   const [activeFocusSession, setActiveFocusSession] = useState<ActiveFocusSession | null>(null);
-  const [focusModeConfig, setFocusModeConfig] = useState<FocusModeConfig>({
-    focusDuration: 25,
-    shortBreakDuration: 5,
-    longBreakDuration: 15,
-    sessionsBeforeLongBreak: 4,
-    autoStartBreak: false,
-    autoStartFocus: false,
-    soundEnabled: true,
-  });
+
+  // Sincronizar focusModeConfig com o SettingsContext
+  const focusModeConfig: FocusModeConfig = {
+    focusDuration: settings.focusMode.focusDuration,
+    shortBreakDuration: settings.focusMode.shortBreakDuration,
+    longBreakDuration: settings.focusMode.longBreakDuration,
+    sessionsBeforeLongBreak: settings.focusMode.sessionsBeforeLongBreak,
+    autoStartBreak: settings.focusMode.autoStartBreak,
+    autoStartFocus: settings.focusMode.autoStartFocus,
+    soundEnabled: settings.focusMode.soundEnabled,
+  };
 
   // Carregar tasks do storage ao iniciar
   useEffect(() => {
@@ -430,8 +434,9 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
     setActiveFocusSession(null);
   };
 
+  // updateFocusModeConfig now does nothing since config comes from SettingsContext
   const updateFocusModeConfig = (config: Partial<FocusModeConfig>) => {
-    setFocusModeConfig(prev => ({ ...prev, ...config }));
+    console.warn('updateFocusModeConfig is deprecated. Use SettingsContext instead.');
   };
 
   // ==========================================

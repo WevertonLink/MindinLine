@@ -64,15 +64,15 @@ const BottomTabNavigator = () => {
         }}
       />
 
-      {/* FlowKeeper Tab */}
+      {/* Trilhas de Estudo Tab */}
       <Tab.Screen
         name="FlowKeeperTab"
         component={FlowKeeperNavigator}
         options={{
           headerShown: false,
-          tabBarLabel: 'Fluxos',
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="library-outline" size={size} color={color} />
+          tabBarLabel: 'Trilhas',
+          tabBarIcon: ({ color, size}) => (
+            <Icon name="map-outline" size={size} color={color} />
           ),
         }}
       />

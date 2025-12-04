@@ -30,7 +30,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onContinueAsGuest, onSign
         </View>
         <Text style={styles.title}>MindinLine</Text>
         <Text style={styles.subtitle}>
-          Organize seus estudos com flashcards inteligentes, fluxos estruturados e produtividade focada
+          Organize seus estudos com flashcards inteligentes, trilhas estruturadas e produtividade focada
         </Text>
       </View>
 
@@ -48,11 +48,11 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onContinueAsGuest, onSign
 
         <View style={styles.featureCard}>
           <View style={[styles.featureIcon, { backgroundColor: 'rgba(247, 170, 57, 0.15)' }]}>
-            <Icon name="library-outline" size={28} color={colors.accent.secondary} />
+            <Icon name="map-outline" size={28} color={colors.accent.secondary} />
           </View>
-          <Text style={styles.featureTitle}>Fluxos</Text>
+          <Text style={styles.featureTitle}>Trilhas</Text>
           <Text style={styles.featureDescription}>
-            Organize o aprendizado
+            Roteiros de estudo
           </Text>
         </View>
 

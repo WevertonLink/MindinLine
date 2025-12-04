@@ -26,23 +26,23 @@ const FlowKeeperHomeScreen = ({ navigation }: any) => {
   const { flows, stats, loading, deleteFlow } = useFlowKeeper();
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Filtrar fluxos por busca
+  // Filtrar trilhas por busca
   const filteredFlows = filterFlowsBySearch(flows, searchQuery);
 
-  // Handler para criar novo fluxo
+  // Handler para criar nova trilha
   const handleCreateFlow = () => {
     navigation.navigate('CreateFlow');
   };
 
-  // Handler para abrir detalhes do fluxo
+  // Handler para abrir detalhes da trilha
   const handleOpenFlow = (flowId: string) => {
     navigation.navigate('FlowDetail', { flowId });
   };
 
-  // Handler para deletar fluxo
+  // Handler para deletar trilha
   const handleDeleteFlow = (flowId: string, flowTitle: string) => {
     Alert.alert(
-      'Deletar Fluxo',
+      'Deletar Trilha',
       `Tem certeza que deseja deletar "${flowTitle}"?`,
       [
         { text: 'Cancelar', style: 'cancel' },
@@ -53,7 +53,7 @@ const FlowKeeperHomeScreen = ({ navigation }: any) => {
             try {
               await deleteFlow(flowId);
             } catch (error) {
-              Alert.alert('Erro', 'Não foi possível deletar o fluxo');
+              Alert.alert('Erro', 'Não foi possível deletar a trilha');
             }
           },
         },
@@ -66,7 +66,7 @@ const FlowKeeperHomeScreen = ({ navigation }: any) => {
       <View style={[globalStyles.container, globalStyles.centered]}>
         <ActivityIndicator size="large" color={colors.accent.primary} />
         <Text style={[globalStyles.bodyText, { marginTop: spacing.md }]}>
-          Carregando fluxos...
+          Carregando trilhas...
         </Text>
       </View>
     );
@@ -81,9 +81,9 @@ const FlowKeeperHomeScreen = ({ navigation }: any) => {
       >
         {/* Header com stats */}
         <View style={styles.header}>
-          <Text style={globalStyles.title}>FlowKeeper</Text>
+          <Text style={globalStyles.title}>Trilhas de Estudo</Text>
           <Text style={globalStyles.subtitle}>
-            Organize seu aprendizado em fluxos estruturados
+            Organize seu aprendizado em roteiros estruturados
           </Text>
 
           {/* Stats */}
@@ -91,11 +91,11 @@ const FlowKeeperHomeScreen = ({ navigation }: any) => {
             <View style={styles.statsContainer}>
               <View style={styles.statItem}>
                 <Text style={styles.statValue}>{stats.totalFlows}</Text>
-                <Text style={styles.statLabel}>Fluxos</Text>
+                <Text style={styles.statLabel}>Trilhas</Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={styles.statValue}>{stats.activeFlows}</Text>
-                <Text style={styles.statLabel}>Ativos</Text>
+                <Text style={styles.statLabel}>Ativas</Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={styles.statValue}>{stats.averageProgress}%</Text>
@@ -111,7 +111,7 @@ const FlowKeeperHomeScreen = ({ navigation }: any) => {
             <Icon name="search-outline" size={20} color={colors.text.tertiary} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Buscar fluxos..."
+              placeholder="Buscar trilhas..."
               placeholderTextColor={colors.text.tertiary}
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -124,7 +124,7 @@ const FlowKeeperHomeScreen = ({ navigation }: any) => {
           </View>
         )}
 
-        {/* Lista de fluxos */}
+        {/* Lista de trilhas */}
         {filteredFlows.length > 0 ? (
           <View style={styles.flowsList}>
             {filteredFlows.map(flow => (

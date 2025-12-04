@@ -28,6 +28,7 @@ const StudyModeScreen = ({ route, navigation }: any) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
+  const [sessionCompleted, setSessionCompleted] = useState(false);
 
   // Animação de flip
   const [flipAnim] = useState(new Animated.Value(0));
@@ -37,11 +38,14 @@ const StudyModeScreen = ({ route, navigation }: any) => {
     if (deck) {
       const cards = getCardsToStudy(deck);
       setCardsToStudy(cards);
+      if (cards.length === 0) {
+        setSessionCompleted(true);
+      }
     }
   }, [deck]);
 
-  // Se deck não encontrado ou sem cards
-  if (!deck || cardsToStudy.length === 0) {
+  // Se deck não encontrado ou sem cards (e sessão não foi apenas completada)
+  if (!deck || (cardsToStudy.length === 0 && !sessionCompleted)) {
     return (
       <View style={[globalStyles.container, globalStyles.centered]}>
         <Icon name="checkmark-circle-outline" size={80} color={colors.status.success} />
@@ -91,17 +95,11 @@ const StudyModeScreen = ({ route, navigation }: any) => {
         setIsFlipped(false);
         flipAnim.setValue(0);
       } else {
-        // Fim da sessão
-        Alert.alert(
-          'Sessão Concluída!',
-          `Você revisou ${cardsToStudy.length} flashcard${cardsToStudy.length !== 1 ? 's' : ''}`,
-          [
-            {
-              text: 'Voltar',
-              onPress: () => navigation.goBack(),
-            },
-          ]
-        );
+        // Fim da sessão - marcar como completa e navegar de volta
+        setSessionCompleted(true);
+        setTimeout(() => {
+          navigation.goBack();
+        }, 1500);
       }
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível registrar a revisão');
@@ -143,6 +141,24 @@ const StudyModeScreen = ({ route, navigation }: any) => {
     inputRange: [0, 0.5, 1],
     outputRange: [0, 0, 1],
   });
+
+  // Tela de sessão concluída
+  if (sessionCompleted && cardsToStudy.length > 0) {
+    return (
+      <View style={[globalStyles.container, globalStyles.centered]}>
+        <Icon name="trophy" size={80} color={colors.accent.primary} />
+        <Text style={[globalStyles.title, { marginTop: spacing.lg }]}>
+          Parabéns!
+        </Text>
+        <Text style={globalStyles.subtitle}>
+          Você revisou {cardsToStudy.length} flashcard{cardsToStudy.length !== 1 ? 's' : ''}
+        </Text>
+        <Text style={[globalStyles.bodyText, { marginTop: spacing.md, color: colors.text.tertiary }]}>
+          Continue assim para dominar o conteúdo!
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={globalStyles.container}>

@@ -1,45 +1,45 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
+ * MindinLine - App para pessoas com TDAH
+ * Desenvolvimento vibe-coding no Termux
  *
  * @format
  */
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import React from 'react';
+import { StatusBar } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import AppNavigator from './src/navigation/AppNavigator';
+import { colors } from './src/theme/globalStyles';
+import { FlowKeeperProvider } from './src/context/FlowKeeperContext';
+import { FlashcardsProvider } from './src/context/FlashcardsContext';
+import { TasksProvider } from './src/context/TasksContext';
+import { TimelineProvider } from './src/context/TimelineContext';
+import { SettingsProvider } from './src/context/SettingsContext';
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <SettingsProvider>
+          <FlowKeeperProvider>
+            <FlashcardsProvider>
+              <TasksProvider>
+                <TimelineProvider>
+                  <StatusBar
+                    barStyle="light-content"
+                    backgroundColor={colors.background.primary}
+                    translucent={false}
+                  />
+                  <AppNavigator />
+                </TimelineProvider>
+              </TasksProvider>
+            </FlashcardsProvider>
+          </FlowKeeperProvider>
+        </SettingsProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default App;

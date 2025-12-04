@@ -1,0 +1,123 @@
+import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { StyleSheet, Platform } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
+
+// Navigators & Screens
+import FlowKeeperNavigator from './FlowKeeperNavigator';
+import FlashcardsNavigator from './FlashcardsNavigator';
+import TasksNavigator from './TasksNavigator';
+import SettingsNavigator from './SettingsNavigator';
+import TimelineScreen from '../screens/Timeline/TimelineScreen';
+
+// Theme
+import { colors, spacing, typography } from '../theme/globalStyles';
+
+const Tab = createBottomTabNavigator();
+
+const BottomTabNavigator = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        // Header style
+        headerStyle: {
+          backgroundColor: colors.background.primary,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.glass.border,
+        },
+        headerTintColor: colors.text.primary,
+        headerTitleStyle: {
+          fontWeight: typography.fontWeight.bold,
+          fontSize: typography.fontSize.lg,
+        },
+
+        // Tab bar style
+        tabBarStyle: {
+          backgroundColor: 'rgba(10, 14, 39, 0.95)',
+          borderTopWidth: 1,
+          borderTopColor: colors.glass.border,
+          height: Platform.OS === 'ios' ? 88 : 70,
+          paddingBottom: Platform.OS === 'ios' ? 24 : 12,
+          paddingTop: spacing.sm,
+        },
+        tabBarActiveTintColor: colors.accent.primary,
+        tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.4)',
+        tabBarLabelStyle: {
+          fontSize: typography.fontSize.xs,
+          fontWeight: typography.fontWeight.medium,
+        },
+      }}
+    >
+      {/* FlowKeeper Tab */}
+      <Tab.Screen
+        name="FlowKeeperTab"
+        component={FlowKeeperNavigator}
+        options={{
+          headerShown: false,
+          tabBarLabel: 'Fluxos',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="library-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      {/* Flashcards Tab */}
+      <Tab.Screen
+        name="FlashcardsTab"
+        component={FlashcardsNavigator}
+        options={{
+          headerShown: false,
+          tabBarLabel: 'Cards',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="layers-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      {/* Tasks Tab */}
+      <Tab.Screen
+        name="TasksTab"
+        component={TasksNavigator}
+        options={{
+          headerShown: false,
+          tabBarLabel: 'Tarefas',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="checkmark-circle-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      {/* Timeline Tab */}
+      <Tab.Screen
+        name="TimelineTab"
+        component={TimelineScreen}
+        options={{
+          title: 'Timeline',
+          tabBarLabel: 'Linha',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="time-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      {/* Settings Tab */}
+      <Tab.Screen
+        name="SettingsTab"
+        component={SettingsNavigator}
+        options={{
+          headerShown: false,
+          tabBarLabel: 'Config',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="settings-outline" size={size} color={color} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
+
+const styles = StyleSheet.create({
+  // Estilos adicionais se necessário
+});
+
+export default BottomTabNavigator;

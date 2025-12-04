@@ -69,6 +69,7 @@ export interface Flow {
   status: FlowStatus;
   steps: FlowStep[];
   progress: number; // 0-100 (calculado automaticamente)
+  linkedDeckId?: string; // ID do deck de flashcards gerado desta trilha
   createdAt: string;
   updatedAt: string;
   startedAt?: string;

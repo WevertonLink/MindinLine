@@ -52,6 +52,13 @@ interface FlashcardsContextData {
 
   // Utilitários
   refreshDecks: () => Promise<void>;
+
+  // Integração com Trilhas
+  createDeckFromSteps: (
+    flowId: string,
+    flowTitle: string,
+    steps: Array<{ id: string; title: string; description?: string }>
+  ) => Promise<Deck>;
 }
 
 const FlashcardsContext = createContext<FlashcardsContextData>({} as FlashcardsContextData);
@@ -315,6 +322,70 @@ export const FlashcardsProvider: React.FC<FlashcardsProviderProps> = ({ children
   };
 
   // ==========================================
+  // INTEGRAÇÃO COM TRILHAS
+  // ==========================================
+
+  const createDeckFromSteps = async (
+    flowId: string,
+    flowTitle: string,
+    steps: Array<{ id: string; title: string; description?: string }>
+  ): Promise<Deck> => {
+    // Criar novo deck
+    const newDeck: Deck = {
+      id: generateId(),
+      title: `📚 ${flowTitle}`,
+      description: `Flashcards gerados da trilha: ${flowTitle}`,
+      category: 'general',
+      status: 'active',
+      flashcards: [],
+      totalCards: 0,
+      newCards: 0,
+      learningCards: 0,
+      reviewCards: 0,
+      masteredCards: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      tags: ['trilha', flowId],
+    };
+
+    // Criar flashcards para cada step
+    const flashcards: Flashcard[] = steps.map(step => ({
+      id: generateId(),
+      deckId: newDeck.id,
+      front: step.title,
+      back: step.description || 'Estudar e dominar este tópico',
+      easeFactor: 2.5,
+      interval: 0,
+      repetitions: 0,
+      nextReviewDate: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }));
+
+    newDeck.flashcards = flashcards;
+
+    // Atualizar stats do deck
+    const updatedDeck = updateDeckStats(newDeck);
+
+    const updatedDecks = [...decks, updatedDeck];
+    await saveDecksToStorage(updatedDecks);
+
+    // Registrar no Timeline
+    await addTimelineActivity({
+      type: 'flashcard_review',
+      title: `Deck criado: ${newDeck.title}`,
+      description: `${flashcards.length} flashcards gerados automaticamente da trilha`,
+      metadata: {
+        deckId: newDeck.id,
+        deckTitle: newDeck.title,
+        flowId,
+      },
+    });
+
+    return updatedDeck;
+  };
+
+  // ==========================================
   // PROVIDER VALUE
   // ==========================================
 
@@ -331,6 +402,7 @@ export const FlashcardsProvider: React.FC<FlashcardsProviderProps> = ({ children
     deleteFlashcard,
     reviewFlashcard,
     refreshDecks,
+    createDeckFromSteps,
   };
 
   return <FlashcardsContext.Provider value={value}>{children}</FlashcardsContext.Provider>;

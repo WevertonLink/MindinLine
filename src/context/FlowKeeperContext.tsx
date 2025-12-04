@@ -48,6 +48,9 @@ interface FlowKeeperContextData {
 
   // Utilitários
   refreshFlows: () => Promise<void>;
+
+  // Integração
+  linkDeck: (flowId: string, deckId: string) => Promise<void>;
 }
 
 const FlowKeeperContext = createContext<FlowKeeperContextData>({} as FlowKeeperContextData);
@@ -390,6 +393,25 @@ export const FlowKeeperProvider: React.FC<FlowKeeperProviderProps> = ({ children
   };
 
   // ==========================================
+  // INTEGRAÇÃO
+  // ==========================================
+
+  const linkDeck = async (flowId: string, deckId: string): Promise<void> => {
+    const updatedFlows = flows.map(flow => {
+      if (flow.id === flowId) {
+        return {
+          ...flow,
+          linkedDeckId: deckId,
+          updatedAt: new Date().toISOString(),
+        };
+      }
+      return flow;
+    });
+
+    await saveFlowsToStorage(updatedFlows);
+  };
+
+  // ==========================================
   // PROVIDER VALUE
   // ==========================================
 
@@ -409,6 +431,7 @@ export const FlowKeeperProvider: React.FC<FlowKeeperProviderProps> = ({ children
     addMaterial,
     deleteMaterial,
     refreshFlows,
+    linkDeck,
   };
 
   return <FlowKeeperContext.Provider value={value}>{children}</FlowKeeperContext.Provider>;

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTimeline } from '../../context/TimelineContext';
+import { useFlashcards } from '../../context/FlashcardsContext';
 import ActivityCard from '../../components/ActivityCard';
 import EmptyState from '../../components/EmptyState';
 import {
@@ -22,7 +23,7 @@ import {
 import { TimeRange } from '../../features/timeline/types';
 import { formatDate } from '../../features/timeline/utils';
 
-const TimelineScreen = () => {
+const TimelineScreen = ({ navigation }: any) => {
   const {
     stats,
     loading,
@@ -31,6 +32,7 @@ const TimelineScreen = () => {
     getDailyActivities,
     deleteActivity,
   } = useTimeline();
+  const { stats: flashcardsStats } = useFlashcards();
 
   const dailyActivities = getDailyActivities();
 
@@ -87,6 +89,29 @@ const TimelineScreen = () => {
             Acompanhe sua evolução cognitiva
           </Text>
         </View>
+
+        {/* Flashcards a Revisar Widget */}
+        {flashcardsStats.cardsToReviewToday > 0 && (
+          <Pressable
+            style={styles.reviewWidget}
+            onPress={() => {
+              navigation.navigate('FlashcardsTab', {
+                screen: 'FlashcardsHome',
+              });
+            }}
+          >
+            <View style={styles.reviewWidgetIcon}>
+              <Icon name="layers" size={28} color={colors.accent.primary} />
+            </View>
+            <View style={styles.reviewWidgetContent}>
+              <Text style={styles.reviewWidgetTitle}>Revisar Flashcards</Text>
+              <Text style={styles.reviewWidgetSubtitle}>
+                {flashcardsStats.cardsToReviewToday} card{flashcardsStats.cardsToReviewToday !== 1 ? 's' : ''} aguardando revisão
+              </Text>
+            </View>
+            <Icon name="chevron-forward" size={20} color={colors.accent.primary} />
+          </Pressable>
+        )}
 
         {/* Stats Cards */}
         {stats.totalActivities > 0 && (
@@ -241,6 +266,38 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: spacing.lg,
+  },
+  reviewWidget: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(91, 126, 255, 0.1)',
+    borderRadius: borderRadius.lg,
+    borderWidth: 2,
+    borderColor: colors.accent.primary,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+    gap: spacing.sm,
+  },
+  reviewWidgetIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: borderRadius.md,
+    backgroundColor: 'rgba(91, 126, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  reviewWidgetContent: {
+    flex: 1,
+  },
+  reviewWidgetTitle: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    marginBottom: 2,
+  },
+  reviewWidgetSubtitle: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
   },
   statsGrid: {
     flexDirection: 'row',

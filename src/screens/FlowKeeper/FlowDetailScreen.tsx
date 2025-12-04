@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useFlowKeeper } from '../../context/FlowKeeperContext';
+import { useFlashcards } from '../../context/FlashcardsContext';
 import StepItem from '../../components/StepItem';
 import EmptyState from '../../components/EmptyState';
 import {
@@ -33,7 +34,8 @@ import {
 
 const FlowDetailScreen = ({ route, navigation }: any) => {
   const { flowId } = route.params;
-  const { getFlowById, addStep, toggleStepCompletion, deleteStep } = useFlowKeeper();
+  const { getFlowById, addStep, toggleStepCompletion, deleteStep, linkDeck } = useFlowKeeper();
+  const { createDeckFromSteps, getDeckById } = useFlashcards();
 
   const flow = getFlowById(flowId);
 
@@ -42,6 +44,7 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
   const [newStepDescription, setNewStepDescription] = useState('');
   const [newStepTime, setNewStepTime] = useState('');
   const [isAddingStep, setIsAddingStep] = useState(false);
+  const [isCreatingDeck, setIsCreatingDeck] = useState(false);
 
   // Se fluxo não encontrado
   if (!flow) {
@@ -119,6 +122,53 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
     );
   };
 
+  // Handler para criar flashcards das etapas
+  const handleCreateFlashcards = async () => {
+    if (flow.steps.length === 0) {
+      Alert.alert('Aviso', 'Adicione etapas primeiro para gerar flashcards');
+      return;
+    }
+
+    Alert.alert(
+      'Criar Flashcards',
+      `Deseja gerar ${flow.steps.length} flashcard${flow.steps.length !== 1 ? 's' : ''} desta trilha?\n\nCada etapa será transformada em um flashcard para você memorizar.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Criar',
+          onPress: async () => {
+            try {
+              setIsCreatingDeck(true);
+
+              const deck = await createDeckFromSteps(
+                flowId,
+                flow.title,
+                flow.steps.map(s => ({
+                  id: s.id,
+                  title: s.title,
+                  description: s.description,
+                }))
+              );
+
+              // Salvar linkedDeckId no flow
+              await linkDeck(flowId, deck.id);
+
+              Alert.alert(
+                'Sucesso! 🎉',
+                `Deck "${deck.title}" criado com ${deck.totalCards} flashcards.\n\nVá para a aba Flashcards para começar a estudar!`,
+                [{ text: 'Ok' }]
+              );
+            } catch (error) {
+              Alert.alert('Erro', 'Não foi possível criar os flashcards');
+            } finally {
+              setIsCreatingDeck(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={globalStyles.container}>
       <ScrollView
@@ -178,6 +228,46 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
             </View>
           </View>
         </View>
+
+        {/* Botão Criar Flashcards */}
+        {flow.steps.length > 0 && !flow.linkedDeckId && (
+          <Pressable
+            style={[styles.createFlashcardsButton, isCreatingDeck && styles.buttonDisabled]}
+            onPress={handleCreateFlashcards}
+            disabled={isCreatingDeck}
+          >
+            <Icon name="layers" size={20} color={colors.accent.primary} />
+            <Text style={styles.createFlashcardsText}>
+              {isCreatingDeck
+                ? 'Gerando Flashcards...'
+                : `Gerar ${flow.steps.length} Flashcard${flow.steps.length !== 1 ? 's' : ''}`}
+            </Text>
+          </Pressable>
+        )}
+
+        {/* Deck Vinculado */}
+        {flow.linkedDeckId && getDeckById(flow.linkedDeckId) && (
+          <Pressable
+            style={styles.linkedDeckCard}
+            onPress={() => {
+              navigation.navigate('FlashcardsTab', {
+                screen: 'DeckDetail',
+                params: { deckId: flow.linkedDeckId },
+              });
+            }}
+          >
+            <Icon name="layers" size={24} color={colors.accent.primary} />
+            <View style={styles.linkedDeckInfo}>
+              <Text style={styles.linkedDeckTitle}>
+                Deck de Flashcards Vinculado
+              </Text>
+              <Text style={styles.linkedDeckSubtitle}>
+                {getDeckById(flow.linkedDeckId)?.title}
+              </Text>
+            </View>
+            <Icon name="chevron-forward" size={20} color={colors.text.tertiary} />
+          </Pressable>
+        )}
 
         {/* Etapas */}
         <View style={styles.section}>
@@ -397,6 +487,52 @@ const styles = StyleSheet.create({
   },
   addButton: {
     padding: spacing.xs,
+  },
+  createFlashcardsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(91, 126, 255, 0.1)',
+    borderRadius: borderRadius.md,
+    borderWidth: 2,
+    borderColor: colors.accent.primary,
+    borderStyle: 'dashed',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.base,
+    marginTop: spacing.lg,
+    gap: spacing.sm,
+  },
+  createFlashcardsText: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.accent.primary,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  linkedDeckCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.glass.background,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.accent.primary,
+    padding: spacing.md,
+    marginTop: spacing.lg,
+    gap: spacing.sm,
+  },
+  linkedDeckInfo: {
+    flex: 1,
+  },
+  linkedDeckTitle: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.tertiary,
+    marginBottom: 2,
+  },
+  linkedDeckSubtitle: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.primary,
   },
   modalOverlay: {
     flex: 1,

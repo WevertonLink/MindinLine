@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StyleSheet, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 // Navigators & Screens
@@ -16,6 +17,8 @@ import { colors, spacing, typography } from '../theme/globalStyles';
 const Tab = createBottomTabNavigator();
 
 const BottomTabNavigator = () => {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -31,13 +34,13 @@ const BottomTabNavigator = () => {
           fontSize: typography.fontSize.lg,
         },
 
-        // Tab bar style
+        // Tab bar style com SafeArea
         tabBarStyle: {
           backgroundColor: 'rgba(10, 14, 39, 0.95)',
           borderTopWidth: 1,
           borderTopColor: colors.glass.border,
-          height: Platform.OS === 'ios' ? 88 : 70,
-          paddingBottom: Platform.OS === 'ios' ? 24 : 12,
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom,
           paddingTop: spacing.sm,
         },
         tabBarActiveTintColor: colors.accent.primary,
@@ -48,6 +51,19 @@ const BottomTabNavigator = () => {
         },
       }}
     >
+      {/* Flashcards Tab - PRIMEIRA (principal) */}
+      <Tab.Screen
+        name="FlashcardsTab"
+        component={FlashcardsNavigator}
+        options={{
+          headerShown: false,
+          tabBarLabel: 'Flashcards',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="layers-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
       {/* FlowKeeper Tab */}
       <Tab.Screen
         name="FlowKeeperTab"
@@ -57,19 +73,6 @@ const BottomTabNavigator = () => {
           tabBarLabel: 'Fluxos',
           tabBarIcon: ({ color, size }) => (
             <Icon name="library-outline" size={size} color={color} />
-          ),
-        }}
-      />
-
-      {/* Flashcards Tab */}
-      <Tab.Screen
-        name="FlashcardsTab"
-        component={FlashcardsNavigator}
-        options={{
-          headerShown: false,
-          tabBarLabel: 'Cards',
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="layers-outline" size={size} color={color} />
           ),
         }}
       />

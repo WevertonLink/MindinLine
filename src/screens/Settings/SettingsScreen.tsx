@@ -198,19 +198,6 @@ const SettingsScreen = ({ navigation }: any) => {
 
           <Pressable style={styles.settingRow}>
             <View style={styles.settingLeft}>
-              <Icon name="color-palette-outline" size={20} color={colors.text.secondary} />
-              <Text style={styles.settingLabel}>Tema</Text>
-            </View>
-            <View style={styles.settingRight}>
-              <Text style={styles.settingValue}>Glassmorphism Deep</Text>
-              <Icon name="lock-closed" size={16} color={colors.text.tertiary} />
-            </View>
-          </Pressable>
-
-          <View style={globalStyles.divider} />
-
-          <Pressable style={styles.settingRow}>
-            <View style={styles.settingLeft}>
               <Icon name="language-outline" size={20} color={colors.text.secondary} />
               <Text style={styles.settingLabel}>Idioma</Text>
             </View>

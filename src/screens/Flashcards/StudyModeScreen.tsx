@@ -225,7 +225,7 @@ const StudyModeScreen = ({ route, navigation }: any) => {
             ]}
           >
             <Text style={styles.cardLabel}>FRENTE</Text>
-            <Text style={styles.cardText}>{currentCard.front}</Text>
+            <Text style={styles.cardText}>{currentCard?.front || 'Sem conteúdo'}</Text>
             <View style={styles.flipHint}>
               <Icon name="sync-outline" size={20} color={colors.text.tertiary} />
               <Text style={styles.flipHintText}>Toque para virar</Text>
@@ -244,7 +244,7 @@ const StudyModeScreen = ({ route, navigation }: any) => {
             ]}
           >
             <Text style={styles.cardLabel}>VERSO</Text>
-            <Text style={styles.cardText}>{currentCard.back}</Text>
+            <Text style={styles.cardText}>{currentCard?.back || 'Sem conteúdo'}</Text>
           </Animated.View>
         </Pressable>
 

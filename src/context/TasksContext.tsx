@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   Task,
@@ -73,19 +73,12 @@ interface TasksProviderProps {
 export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
   const { settings } = useSettings();
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [stats, setStats] = useState<TasksStats>({
-    totalTasks: 0,
-    todoTasks: 0,
-    inProgressTasks: 0,
-    completedTasks: 0,
-    cancelledTasks: 0,
-    overdueTasks: 0,
-    dueTodayTasks: 0,
-    totalFocusTime: 0,
-    completionRate: 0,
-  });
   const [loading, setLoading] = useState(true);
   const [activeFocusSession, setActiveFocusSession] = useState<ActiveFocusSession | null>(null);
+
+  // Calcular stats diretamente de tasks com memoização
+  // Só recalcula quando tasks muda, evitando re-renders desnecessários
+  const stats = useMemo(() => calculateStats(tasks), [tasks]);
 
   // Sincronizar focusModeConfig com o SettingsContext
   const focusModeConfig: FocusModeConfig = {
@@ -103,11 +96,6 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
     loadTasksFromStorage();
     restoreActiveFocusSession();
   }, []);
-
-  // Atualizar stats sempre que tasks mudar
-  useEffect(() => {
-    setStats(calculateStats(tasks));
-  }, [tasks]);
 
   // Atualizar elapsed a cada segundo quando a sessão está rodando
   useEffect(() => {

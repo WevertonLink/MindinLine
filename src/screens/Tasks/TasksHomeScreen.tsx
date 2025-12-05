@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
+  FlatList,
   Pressable,
   ActivityIndicator,
   TextInput,
@@ -63,7 +64,7 @@ const TasksHomeScreen = ({ navigation }: any) => {
     }
   };
 
-  const handleDeleteTask = (taskId: string, taskTitle: string) => {
+  const handleDeleteTask = useCallback((taskId: string, taskTitle: string) => {
     Alert.alert('Deletar Tarefa', `Tem certeza que deseja deletar "${taskTitle}"?`, [
       { text: 'Cancelar', style: 'cancel' },
       {
@@ -78,7 +79,172 @@ const TasksHomeScreen = ({ navigation }: any) => {
         },
       },
     ]);
-  };
+  }, [deleteTask]);
+
+  // FlatList render functions
+  const renderTaskItem = useCallback(({ item: task }: { item: typeof filteredTasks[0] }) => (
+    <TaskCard
+      task={task}
+      onPress={() => navigation.navigate('TaskDetail', { taskId: task.id })}
+      onLongPress={() => handleDeleteTask(task.id, task.title)}
+      onToggle={() => toggleTaskStatus(task.id)}
+    />
+  ), [navigation, handleDeleteTask, toggleTaskStatus]);
+
+  const keyExtractor = useCallback((item: typeof filteredTasks[0]) => item.id, []);
+
+  const renderListHeader = useCallback(() => (
+    <>
+      {/* Header com stats */}
+      <View style={styles.header}>
+        <Text style={globalStyles.title}>Tasks</Text>
+        <Text style={globalStyles.subtitle}>
+          Gerencie suas tarefas com foco e produtividade
+        </Text>
+
+        {tasks.length > 0 && (
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{stats.todoTasks}</Text>
+              <Text style={styles.statLabel}>A Fazer</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: colors.status.info }]}>
+                {stats.inProgressTasks}
+              </Text>
+              <Text style={styles.statLabel}>Em Progresso</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: colors.status.success }]}>
+                {stats.completedTasks}
+              </Text>
+              <Text style={styles.statLabel}>Concluídas</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: colors.status.error }]}>
+                {stats.overdueTasks}
+              </Text>
+              <Text style={styles.statLabel}>Atrasadas</Text>
+            </View>
+          </View>
+        )}
+      </View>
+
+      {/* Search bar */}
+      {tasks.length > 0 && (
+        <View style={styles.searchContainer}>
+          <Icon name="search-outline" size={20} color={colors.text.tertiary} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Buscar tarefas..."
+            placeholderTextColor={colors.text.tertiary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <Pressable onPress={() => setSearchQuery('')}>
+              <Icon name="close-circle" size={20} color={colors.text.tertiary} />
+            </Pressable>
+          )}
+        </View>
+      )}
+
+      {/* Filter tabs */}
+      {tasks.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterTabs}
+          contentContainerStyle={styles.filterTabsContent}
+        >
+          {[
+            { key: 'all', label: 'Todas', count: tasks.length },
+            { key: 'todo', label: 'A Fazer', count: stats.todoTasks },
+            { key: 'in_progress', label: 'Em Progresso', count: stats.inProgressTasks },
+            { key: 'completed', label: 'Concluídas', count: stats.completedTasks },
+          ].map(filter => (
+            <Pressable
+              key={filter.key}
+              style={[
+                styles.filterTab,
+                filterStatus === filter.key && styles.filterTabActive,
+              ]}
+              onPress={() => setFilterStatus(filter.key as TaskStatus | 'all')}
+            >
+              <Text
+                style={[
+                  styles.filterTabText,
+                  filterStatus === filter.key && styles.filterTabTextActive,
+                ]}
+              >
+                {filter.label} ({filter.count})
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
+
+      {/* Quick add */}
+      {showQuickAdd && (
+        <View style={styles.quickAddContainer}>
+          <TextInput
+            style={styles.quickAddInput}
+            placeholder="Ex: Revisar flashcards de inglês"
+            placeholderTextColor={colors.text.tertiary}
+            value={quickTaskTitle}
+            onChangeText={setQuickTaskTitle}
+            autoFocus
+            onSubmitEditing={handleQuickAdd}
+          />
+          <Pressable onPress={handleQuickAdd} style={styles.quickAddButton}>
+            <Icon name="add-circle" size={24} color={colors.accent.primary} />
+          </Pressable>
+          <Pressable onPress={() => setShowQuickAdd(false)} style={styles.quickAddButton}>
+            <Icon name="close-circle" size={24} color={colors.text.tertiary} />
+          </Pressable>
+        </View>
+      )}
+    </>
+  ), [tasks.length, stats, searchQuery, filterStatus, showQuickAdd, quickTaskTitle, handleQuickAdd]);
+
+  const renderListEmpty = useCallback(() => {
+    if (tasks.length > 0) {
+      return (
+        <EmptyState
+          icon="search-outline"
+          title="Nenhum resultado"
+          message={`Não encontramos tarefas com "${searchQuery}"`}
+        />
+      );
+    }
+    return (
+      <EmptyState
+        icon="checkmark-circle-outline"
+        title="Nenhuma tarefa criada"
+        message="Crie sua primeira tarefa para começar a organizar seu dia com foco e produtividade"
+      />
+    );
+  }, [tasks.length, searchQuery]);
+
+  const renderListFooter = useCallback(() => (
+    <>
+      {/* Botão de adicionar rápido */}
+      {!showQuickAdd && (
+        <Pressable
+          style={({ pressed }) => [
+            globalStyles.buttonSecondary,
+            pressed && styles.buttonPressed,
+          ]}
+          onPress={() => setShowQuickAdd(true)}
+        >
+          <Icon name="flash" size={20} color={colors.text.primary} />
+          <Text style={[globalStyles.buttonText, { marginLeft: spacing.sm }]}>
+            Adicionar Rápido
+          </Text>
+        </Pressable>
+      )}
+    </>
+  ), [showQuickAdd]);
 
   if (loading) {
     return (
@@ -93,164 +259,20 @@ const TasksHomeScreen = ({ navigation }: any) => {
 
   return (
     <View style={globalStyles.container}>
-      <ScrollView
-        style={styles.scrollView}
+      <FlatList
+        data={filteredTasks}
+        renderItem={renderTaskItem}
+        keyExtractor={keyExtractor}
+        ListHeaderComponent={renderListHeader}
+        ListEmptyComponent={renderListEmpty}
+        ListFooterComponent={renderListFooter}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-      >
-        {/* Header com stats */}
-        <View style={styles.header}>
-          <Text style={globalStyles.title}>Tasks</Text>
-          <Text style={globalStyles.subtitle}>
-            Gerencie suas tarefas com foco e produtividade
-          </Text>
-
-          {tasks.length > 0 && (
-            <View style={styles.statsContainer}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{stats.todoTasks}</Text>
-                <Text style={styles.statLabel}>A Fazer</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.status.info }]}>
-                  {stats.inProgressTasks}
-                </Text>
-                <Text style={styles.statLabel}>Em Progresso</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.status.success }]}>
-                  {stats.completedTasks}
-                </Text>
-                <Text style={styles.statLabel}>Concluídas</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.status.error }]}>
-                  {stats.overdueTasks}
-                </Text>
-                <Text style={styles.statLabel}>Atrasadas</Text>
-              </View>
-            </View>
-          )}
-        </View>
-
-        {/* Search bar */}
-        {tasks.length > 0 && (
-          <View style={styles.searchContainer}>
-            <Icon name="search-outline" size={20} color={colors.text.tertiary} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Buscar tarefas..."
-              placeholderTextColor={colors.text.tertiary}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            {searchQuery.length > 0 && (
-              <Pressable onPress={() => setSearchQuery('')}>
-                <Icon name="close-circle" size={20} color={colors.text.tertiary} />
-              </Pressable>
-            )}
-          </View>
-        )}
-
-        {/* Filter tabs */}
-        {tasks.length > 0 && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.filterTabs}
-            contentContainerStyle={styles.filterTabsContent}
-          >
-            {[
-              { key: 'all', label: 'Todas', count: tasks.length },
-              { key: 'todo', label: 'A Fazer', count: stats.todoTasks },
-              { key: 'in_progress', label: 'Em Progresso', count: stats.inProgressTasks },
-              { key: 'completed', label: 'Concluídas', count: stats.completedTasks },
-            ].map(filter => (
-              <Pressable
-                key={filter.key}
-                style={[
-                  styles.filterTab,
-                  filterStatus === filter.key && styles.filterTabActive,
-                ]}
-                onPress={() => setFilterStatus(filter.key as TaskStatus | 'all')}
-              >
-                <Text
-                  style={[
-                    styles.filterTabText,
-                    filterStatus === filter.key && styles.filterTabTextActive,
-                  ]}
-                >
-                  {filter.label} ({filter.count})
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-        )}
-
-        {/* Quick add */}
-        {showQuickAdd && (
-          <View style={styles.quickAddContainer}>
-            <TextInput
-              style={styles.quickAddInput}
-              placeholder="Ex: Revisar flashcards de inglês"
-              placeholderTextColor={colors.text.tertiary}
-              value={quickTaskTitle}
-              onChangeText={setQuickTaskTitle}
-              autoFocus
-              onSubmitEditing={handleQuickAdd}
-            />
-            <Pressable onPress={handleQuickAdd} style={styles.quickAddButton}>
-              <Icon name="add-circle" size={24} color={colors.accent.primary} />
-            </Pressable>
-            <Pressable onPress={() => setShowQuickAdd(false)} style={styles.quickAddButton}>
-              <Icon name="close-circle" size={24} color={colors.text.tertiary} />
-            </Pressable>
-          </View>
-        )}
-
-        {/* Lista de tarefas */}
-        {filteredTasks.length > 0 ? (
-          <View style={styles.tasksList}>
-            {filteredTasks.map(task => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                onPress={() => navigation.navigate('TaskDetail', { taskId: task.id })}
-                onLongPress={() => handleDeleteTask(task.id, task.title)}
-                onToggle={() => toggleTaskStatus(task.id)}
-              />
-            ))}
-          </View>
-        ) : tasks.length > 0 ? (
-          <EmptyState
-            icon="search-outline"
-            title="Nenhum resultado"
-            message={`Não encontramos tarefas com "${searchQuery}"`}
-          />
-        ) : (
-          <EmptyState
-            icon="checkmark-circle-outline"
-            title="Nenhuma tarefa criada"
-            message="Crie sua primeira tarefa para começar a organizar seu dia com foco e produtividade"
-          />
-        )}
-
-        {/* Botão de adicionar rápido */}
-        {!showQuickAdd && (
-          <Pressable
-            style={({ pressed }) => [
-              globalStyles.buttonSecondary,
-              pressed && styles.buttonPressed,
-            ]}
-            onPress={() => setShowQuickAdd(true)}
-          >
-            <Icon name="flash" size={20} color={colors.text.primary} />
-            <Text style={[globalStyles.buttonText, { marginLeft: spacing.sm }]}>
-              Adicionar Rápido
-            </Text>
-          </Pressable>
-        )}
-      </ScrollView>
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={true}
+      />
 
       {/* FAB - Floating Action Button */}
       <Pressable
@@ -362,9 +384,6 @@ const styles = StyleSheet.create({
   },
   quickAddButton: {
     padding: spacing.xs,
-  },
-  tasksList: {
-    marginBottom: spacing.lg,
   },
   buttonPressed: {
     opacity: 0.8,

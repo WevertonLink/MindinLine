@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   Pressable,
   ActivityIndicator,
   TextInput,
@@ -28,15 +28,15 @@ const FlashcardsHomeScreen = ({ navigation }: any) => {
 
   const filteredDecks = filterDecksBySearch(decks, searchQuery);
 
-  const handleCreateDeck = () => {
+  const handleCreateDeck = useCallback(() => {
     navigation.navigate('CreateDeck');
-  };
+  }, [navigation]);
 
-  const handleOpenDeck = (deckId: string) => {
+  const handleOpenDeck = useCallback((deckId: string) => {
     navigation.navigate('DeckDetail', { deckId });
-  };
+  }, [navigation]);
 
-  const handleDeleteDeck = (deckId: string, deckTitle: string) => {
+  const handleDeleteDeck = useCallback((deckId: string, deckTitle: string) => {
     Alert.alert('Deletar Deck', `Tem certeza que deseja deletar "${deckTitle}"?`, [
       { text: 'Cancelar', style: 'cancel' },
       {
@@ -51,7 +51,104 @@ const FlashcardsHomeScreen = ({ navigation }: any) => {
         },
       },
     ]);
-  };
+  }, [deleteDeck]);
+
+  // FlatList render functions
+  const renderDeckItem = useCallback(({ item: deck }: { item: typeof filteredDecks[0] }) => (
+    <DeckCard
+      deck={deck}
+      onPress={() => handleOpenDeck(deck.id)}
+      onLongPress={() => handleDeleteDeck(deck.id, deck.title)}
+    />
+  ), [handleOpenDeck, handleDeleteDeck]);
+
+  const keyExtractor = useCallback((item: typeof filteredDecks[0]) => item.id, []);
+
+  const renderListHeader = useCallback(() => (
+    <>
+      {/* Header com stats */}
+      <View style={styles.header}>
+        <Text style={globalStyles.title}>Flashcards</Text>
+        <Text style={globalStyles.subtitle}>
+          Estude com repetição espaçada inteligente
+        </Text>
+
+        {decks.length > 0 && (
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{stats.totalDecks}</Text>
+              <Text style={styles.statLabel}>Decks</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: colors.status.warning }]}>
+                {stats.cardsToReviewToday}
+              </Text>
+              <Text style={styles.statLabel}>P/ Revisar</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: colors.status.success }]}>
+                {stats.cardsMastered}
+              </Text>
+              <Text style={styles.statLabel}>Dominados</Text>
+            </View>
+          </View>
+        )}
+      </View>
+
+      {/* Search bar */}
+      {decks.length > 0 && (
+        <View style={styles.searchContainer}>
+          <Icon name="search-outline" size={20} color={colors.text.tertiary} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Buscar decks..."
+            placeholderTextColor={colors.text.tertiary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <Pressable onPress={() => setSearchQuery('')}>
+              <Icon name="close-circle" size={20} color={colors.text.tertiary} />
+            </Pressable>
+          )}
+        </View>
+      )}
+    </>
+  ), [decks.length, stats, searchQuery]);
+
+  const renderListEmpty = useCallback(() => {
+    if (decks.length > 0) {
+      return (
+        <EmptyState
+          icon="search-outline"
+          title="Nenhum resultado"
+          message={`Não encontramos decks com "${searchQuery}"`}
+        />
+      );
+    }
+    return (
+      <EmptyState
+        icon="layers-outline"
+        title="Nenhum deck criado"
+        message="Crie seu primeiro deck de flashcards para começar a memorizar conceitos usando repetição espaçada"
+      />
+    );
+  }, [decks.length, searchQuery]);
+
+  const renderListFooter = useCallback(() => (
+    <Pressable
+      style={({ pressed }) => [
+        globalStyles.buttonPrimary,
+        pressed && styles.buttonPressed,
+      ]}
+      onPress={handleCreateDeck}
+    >
+      <Icon name="add" size={24} color={colors.text.primary} />
+      <Text style={[globalStyles.buttonText, { marginLeft: spacing.sm }]}>
+        Criar Novo Deck
+      </Text>
+    </Pressable>
+  ), [handleCreateDeck]);
 
   if (loading) {
     return (
@@ -66,99 +163,20 @@ const FlashcardsHomeScreen = ({ navigation }: any) => {
 
   return (
     <View style={globalStyles.container}>
-      <ScrollView
-        style={styles.scrollView}
+      <FlatList
+        data={filteredDecks}
+        renderItem={renderDeckItem}
+        keyExtractor={keyExtractor}
+        ListHeaderComponent={renderListHeader}
+        ListEmptyComponent={renderListEmpty}
+        ListFooterComponent={renderListFooter}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-      >
-        {/* Header com stats */}
-        <View style={styles.header}>
-          <Text style={globalStyles.title}>Flashcards</Text>
-          <Text style={globalStyles.subtitle}>
-            Estude com repetição espaçada inteligente
-          </Text>
-
-          {decks.length > 0 && (
-            <View style={styles.statsContainer}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{stats.totalDecks}</Text>
-                <Text style={styles.statLabel}>Decks</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.status.warning }]}>
-                  {stats.cardsToReviewToday}
-                </Text>
-                <Text style={styles.statLabel}>P/ Revisar</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: colors.status.success }]}>
-                  {stats.cardsMastered}
-                </Text>
-                <Text style={styles.statLabel}>Dominados</Text>
-              </View>
-            </View>
-          )}
-        </View>
-
-        {/* Search bar */}
-        {decks.length > 0 && (
-          <View style={styles.searchContainer}>
-            <Icon name="search-outline" size={20} color={colors.text.tertiary} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Buscar decks..."
-              placeholderTextColor={colors.text.tertiary}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            {searchQuery.length > 0 && (
-              <Pressable onPress={() => setSearchQuery('')}>
-                <Icon name="close-circle" size={20} color={colors.text.tertiary} />
-              </Pressable>
-            )}
-          </View>
-        )}
-
-        {/* Lista de decks */}
-        {filteredDecks.length > 0 ? (
-          <View style={styles.decksList}>
-            {filteredDecks.map(deck => (
-              <DeckCard
-                key={deck.id}
-                deck={deck}
-                onPress={() => handleOpenDeck(deck.id)}
-                onLongPress={() => handleDeleteDeck(deck.id, deck.title)}
-              />
-            ))}
-          </View>
-        ) : decks.length > 0 ? (
-          <EmptyState
-            icon="search-outline"
-            title="Nenhum resultado"
-            message={`Não encontramos decks com "${searchQuery}"`}
-          />
-        ) : (
-          <EmptyState
-            icon="layers-outline"
-            title="Nenhum deck criado"
-            message="Crie seu primeiro deck de flashcards para começar a memorizar conceitos usando repetição espaçada"
-          />
-        )}
-
-        {/* Botão de criar */}
-        <Pressable
-          style={({ pressed }) => [
-            globalStyles.buttonPrimary,
-            pressed && styles.buttonPressed,
-          ]}
-          onPress={handleCreateDeck}
-        >
-          <Icon name="add" size={24} color={colors.text.primary} />
-          <Text style={[globalStyles.buttonText, { marginLeft: spacing.sm }]}>
-            Criar Novo Deck
-          </Text>
-        </Pressable>
-      </ScrollView>
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={true}
+      />
     </View>
   );
 };
@@ -213,9 +231,6 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.base,
     color: colors.text.primary,
     paddingVertical: spacing.xs,
-  },
-  decksList: {
-    marginBottom: spacing.lg,
   },
   buttonPressed: {
     opacity: 0.8,

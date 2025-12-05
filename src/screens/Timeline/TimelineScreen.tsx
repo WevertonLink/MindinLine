@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  SectionList,
   Pressable,
   ActivityIndicator,
   Alert,
@@ -36,7 +36,7 @@ const TimelineScreen = ({ navigation }: any) => {
 
   const dailyActivities = getDailyActivities();
 
-  const handleDeleteActivity = (activityId: string, activityTitle: string) => {
+  const handleDeleteActivity = useCallback((activityId: string, activityTitle: string) => {
     Alert.alert(
       'Deletar Atividade',
       `Tem certeza que deseja deletar "${activityTitle}"?`,
@@ -55,7 +55,7 @@ const TimelineScreen = ({ navigation }: any) => {
         },
       ]
     );
-  };
+  }, [deleteActivity]);
 
   const timeRanges: { value: TimeRange; label: string }[] = [
     { value: 'today', label: 'Hoje' },
@@ -63,6 +63,188 @@ const TimelineScreen = ({ navigation }: any) => {
     { value: 'month', label: 'Mês' },
     { value: 'all', label: 'Tudo' },
   ];
+
+  // SectionList configuration
+  const sections = dailyActivities.map(day => ({
+    title: day.date,
+    data: day.activities,
+    totalActivities: day.totalActivities,
+    focusTime: day.focusTime,
+  }));
+
+  const renderSectionHeader = useCallback(({ section }: any) => (
+    <View style={styles.dayHeader}>
+      <Text style={styles.dayDate}>{formatDate(section.title)}</Text>
+      <View style={styles.daySummary}>
+        <Icon name="flash" size={14} color={colors.text.tertiary} />
+        <Text style={styles.daySummaryText}>
+          {section.totalActivities} {section.totalActivities === 1 ? 'atividade' : 'atividades'}
+        </Text>
+        {section.focusTime > 0 && (
+          <>
+            <Text style={styles.daySummaryDot}>•</Text>
+            <Text style={styles.daySummaryText}>
+              {Math.round(section.focusTime)}min foco
+            </Text>
+          </>
+        )}
+      </View>
+    </View>
+  ), []);
+
+  const renderActivityItem = useCallback(({ item: activity }: any) => (
+    <ActivityCard
+      activity={activity}
+      onLongPress={() => handleDeleteActivity(activity.id, activity.title)}
+    />
+  ), [handleDeleteActivity]);
+
+  const keyExtractor = useCallback((item: any) => item.id, []);
+
+  const renderListHeader = useCallback(() => (
+    <>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={globalStyles.title}>Timeline</Text>
+        <Text style={globalStyles.subtitle}>
+          Acompanhe sua evolução cognitiva
+        </Text>
+      </View>
+
+      {/* Flashcards a Revisar Widget */}
+      {flashcardsStats.cardsToReviewToday > 0 && (
+        <Pressable
+          style={styles.reviewWidget}
+          onPress={() => {
+            navigation.navigate('FlashcardsTab', {
+              screen: 'FlashcardsHome',
+            });
+          }}
+        >
+          <View style={styles.reviewWidgetIcon}>
+            <Icon name="layers" size={28} color={colors.accent.primary} />
+          </View>
+          <View style={styles.reviewWidgetContent}>
+            <Text style={styles.reviewWidgetTitle}>Revisar Flashcards</Text>
+            <Text style={styles.reviewWidgetSubtitle}>
+              {flashcardsStats.cardsToReviewToday} card{flashcardsStats.cardsToReviewToday !== 1 ? 's' : ''} aguardando revisão
+            </Text>
+          </View>
+          <Icon name="chevron-forward" size={20} color={colors.accent.primary} />
+        </Pressable>
+      )}
+
+      {/* Stats Cards */}
+      {stats.totalActivities > 0 && (
+        <View style={styles.statsGrid}>
+          {/* Streak Atual */}
+          <View style={[styles.statCard, styles.statCardPrimary]}>
+            <Icon name="flame" size={28} color={colors.accent.primary} />
+            <Text style={styles.statValue}>{stats.currentStreak}</Text>
+            <Text style={styles.statLabel}>
+              {stats.currentStreak === 1 ? 'dia seguido' : 'dias seguidos'}
+            </Text>
+          </View>
+
+          {/* Atividades esta semana */}
+          <View style={styles.statCard}>
+            <Icon name="calendar" size={24} color={colors.status.info} />
+            <Text style={styles.statValue}>{stats.thisWeekActivities}</Text>
+            <Text style={styles.statLabel}>esta semana</Text>
+          </View>
+
+          {/* Tempo de foco esta semana */}
+          <View style={styles.statCard}>
+            <Icon name="timer" size={24} color={colors.status.success} />
+            <Text style={styles.statValue}>{stats.thisWeekFocusTime}</Text>
+            <Text style={styles.statLabel}>min de foco</Text>
+          </View>
+
+          {/* Maior streak */}
+          <View style={styles.statCard}>
+            <Icon name="trophy" size={24} color={colors.status.warning} />
+            <Text style={styles.statValue}>{stats.longestStreak}</Text>
+            <Text style={styles.statLabel}>recorde</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Additional Stats */}
+      {stats.totalActivities > 0 && (
+        <View style={globalStyles.glassCard}>
+          <View style={styles.additionalStatsRow}>
+            <View style={styles.additionalStat}>
+              <Text style={styles.additionalStatValue}>{stats.totalFocusTime}</Text>
+              <Text style={styles.additionalStatLabel}>Min Totais de Foco</Text>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.additionalStat}>
+              <Text style={styles.additionalStatValue}>
+                {stats.mostProductiveDay || 'N/A'}
+              </Text>
+              <Text style={styles.additionalStatLabel}>Dia Mais Produtivo</Text>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.additionalStat}>
+              <Text style={styles.additionalStatValue}>
+                {stats.activitiesPerDay.toFixed(1)}
+              </Text>
+              <Text style={styles.additionalStatLabel}>Atividades/Dia</Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Filtros de Range */}
+      <View style={styles.filtersContainer}>
+        {timeRanges.map(range => {
+          const isSelected = filters.timeRange === range.value;
+          return (
+            <Pressable
+              key={range.value}
+              style={[styles.filterChip, isSelected && styles.filterChipSelected]}
+              onPress={() => setFilters({ timeRange: range.value })}
+            >
+              <Text
+                style={[
+                  styles.filterChipText,
+                  isSelected && styles.filterChipTextSelected,
+                ]}
+              >
+                {range.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </>
+  ), [flashcardsStats.cardsToReviewToday, stats, filters.timeRange, navigation, setFilters]);
+
+  const renderListEmpty = useCallback(() => (
+    <EmptyState
+      icon="time-outline"
+      title="Nenhuma atividade registrada"
+      message={
+        filters.timeRange === 'today'
+          ? 'Comece estudando, revisando flashcards ou completando tarefas'
+          : 'Altere o filtro para ver atividades de outros períodos'
+      }
+    />
+  ), [filters.timeRange]);
+
+  const renderListFooter = useCallback(() => {
+    if (stats.totalActivities === 0) return null;
+
+    return (
+      <View style={styles.infoBox}>
+        <Icon name="information-circle-outline" size={20} color={colors.accent.primary} />
+        <Text style={styles.infoText}>
+          Suas atividades são registradas automaticamente quando você estuda,
+          revisa flashcards, completa tarefas ou realiza sessões de foco.
+        </Text>
+      </View>
+    );
+  }, [stats.totalActivities]);
 
   if (loading) {
     return (
@@ -77,182 +259,21 @@ const TimelineScreen = ({ navigation }: any) => {
 
   return (
     <View style={globalStyles.container}>
-      <ScrollView
-        style={styles.scrollView}
+      <SectionList
+        sections={sections}
+        renderItem={renderActivityItem}
+        renderSectionHeader={renderSectionHeader}
+        keyExtractor={keyExtractor}
+        ListHeaderComponent={renderListHeader}
+        ListEmptyComponent={renderListEmpty}
+        ListFooterComponent={renderListFooter}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={globalStyles.title}>Timeline</Text>
-          <Text style={globalStyles.subtitle}>
-            Acompanhe sua evolução cognitiva
-          </Text>
-        </View>
-
-        {/* Flashcards a Revisar Widget */}
-        {flashcardsStats.cardsToReviewToday > 0 && (
-          <Pressable
-            style={styles.reviewWidget}
-            onPress={() => {
-              navigation.navigate('FlashcardsTab', {
-                screen: 'FlashcardsHome',
-              });
-            }}
-          >
-            <View style={styles.reviewWidgetIcon}>
-              <Icon name="layers" size={28} color={colors.accent.primary} />
-            </View>
-            <View style={styles.reviewWidgetContent}>
-              <Text style={styles.reviewWidgetTitle}>Revisar Flashcards</Text>
-              <Text style={styles.reviewWidgetSubtitle}>
-                {flashcardsStats.cardsToReviewToday} card{flashcardsStats.cardsToReviewToday !== 1 ? 's' : ''} aguardando revisão
-              </Text>
-            </View>
-            <Icon name="chevron-forward" size={20} color={colors.accent.primary} />
-          </Pressable>
-        )}
-
-        {/* Stats Cards */}
-        {stats.totalActivities > 0 && (
-          <View style={styles.statsGrid}>
-            {/* Streak Atual */}
-            <View style={[styles.statCard, styles.statCardPrimary]}>
-              <Icon name="flame" size={28} color={colors.accent.primary} />
-              <Text style={styles.statValue}>{stats.currentStreak}</Text>
-              <Text style={styles.statLabel}>
-                {stats.currentStreak === 1 ? 'dia seguido' : 'dias seguidos'}
-              </Text>
-            </View>
-
-            {/* Atividades esta semana */}
-            <View style={styles.statCard}>
-              <Icon name="calendar" size={24} color={colors.status.info} />
-              <Text style={styles.statValue}>{stats.thisWeekActivities}</Text>
-              <Text style={styles.statLabel}>esta semana</Text>
-            </View>
-
-            {/* Tempo de foco esta semana */}
-            <View style={styles.statCard}>
-              <Icon name="timer" size={24} color={colors.status.success} />
-              <Text style={styles.statValue}>{stats.thisWeekFocusTime}</Text>
-              <Text style={styles.statLabel}>min de foco</Text>
-            </View>
-
-            {/* Maior streak */}
-            <View style={styles.statCard}>
-              <Icon name="trophy" size={24} color={colors.status.warning} />
-              <Text style={styles.statValue}>{stats.longestStreak}</Text>
-              <Text style={styles.statLabel}>recorde</Text>
-            </View>
-          </View>
-        )}
-
-        {/* Additional Stats */}
-        {stats.totalActivities > 0 && (
-          <View style={globalStyles.glassCard}>
-            <View style={styles.additionalStatsRow}>
-              <View style={styles.additionalStat}>
-                <Text style={styles.additionalStatValue}>{stats.totalFocusTime}</Text>
-                <Text style={styles.additionalStatLabel}>Min Totais de Foco</Text>
-              </View>
-              <View style={styles.divider} />
-              <View style={styles.additionalStat}>
-                <Text style={styles.additionalStatValue}>
-                  {stats.mostProductiveDay || 'N/A'}
-                </Text>
-                <Text style={styles.additionalStatLabel}>Dia Mais Produtivo</Text>
-              </View>
-              <View style={styles.divider} />
-              <View style={styles.additionalStat}>
-                <Text style={styles.additionalStatValue}>
-                  {stats.activitiesPerDay.toFixed(1)}
-                </Text>
-                <Text style={styles.additionalStatLabel}>Atividades/Dia</Text>
-              </View>
-            </View>
-          </View>
-        )}
-
-        {/* Filtros de Range */}
-        <View style={styles.filtersContainer}>
-          {timeRanges.map(range => {
-            const isSelected = filters.timeRange === range.value;
-            return (
-              <Pressable
-                key={range.value}
-                style={[styles.filterChip, isSelected && styles.filterChipSelected]}
-                onPress={() => setFilters({ timeRange: range.value })}
-              >
-                <Text
-                  style={[
-                    styles.filterChipText,
-                    isSelected && styles.filterChipTextSelected,
-                  ]}
-                >
-                  {range.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {/* Lista de Atividades */}
-        {dailyActivities.length > 0 ? (
-          dailyActivities.map(day => (
-            <View key={day.date} style={styles.daySection}>
-              {/* Day Header */}
-              <View style={styles.dayHeader}>
-                <Text style={styles.dayDate}>{formatDate(day.date)}</Text>
-                <View style={styles.daySummary}>
-                  <Icon name="flash" size={14} color={colors.text.tertiary} />
-                  <Text style={styles.daySummaryText}>
-                    {day.totalActivities} {day.totalActivities === 1 ? 'atividade' : 'atividades'}
-                  </Text>
-                  {day.focusTime > 0 && (
-                    <>
-                      <Text style={styles.daySummaryDot}>•</Text>
-                      <Text style={styles.daySummaryText}>
-                        {Math.round(day.focusTime)}min foco
-                      </Text>
-                    </>
-                  )}
-                </View>
-              </View>
-
-              {/* Activities */}
-              {day.activities.map(activity => (
-                <ActivityCard
-                  key={activity.id}
-                  activity={activity}
-                  onLongPress={() => handleDeleteActivity(activity.id, activity.title)}
-                />
-              ))}
-            </View>
-          ))
-        ) : (
-          <EmptyState
-            icon="time-outline"
-            title="Nenhuma atividade registrada"
-            message={
-              filters.timeRange === 'today'
-                ? 'Comece estudando, revisando flashcards ou completando tarefas'
-                : 'Altere o filtro para ver atividades de outros períodos'
-            }
-          />
-        )}
-
-        {/* Info Footer */}
-        {stats.totalActivities > 0 && (
-          <View style={styles.infoBox}>
-            <Icon name="information-circle-outline" size={20} color={colors.accent.primary} />
-            <Text style={styles.infoText}>
-              Suas atividades são registradas automaticamente quando você estuda,
-              revisa flashcards, completa tarefas ou realiza sessões de foco.
-            </Text>
-          </View>
-        )}
-      </ScrollView>
+        stickySectionHeadersEnabled={false}
+        initialNumToRender={15}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+      />
     </View>
   );
 };
@@ -381,9 +402,6 @@ const styles = StyleSheet.create({
   filterChipTextSelected: {
     color: colors.text.primary,
     fontWeight: typography.fontWeight.semibold,
-  },
-  daySection: {
-    marginBottom: spacing.lg,
   },
   dayHeader: {
     marginBottom: spacing.md,

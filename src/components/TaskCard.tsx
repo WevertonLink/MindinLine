@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Task } from '../features/tasks/types';
@@ -29,7 +29,7 @@ interface TaskCardProps {
   onToggle: () => void;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({
+const TaskCardComponent: React.FC<TaskCardProps> = ({
   task,
   onPress,
   onLongPress,
@@ -318,6 +318,47 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginRight: spacing.sm,
   },
+});
+
+/**
+ * TaskCard memoizado com comparação customizada
+ * Evita re-renders desnecessários quando apenas outras tasks mudam
+ */
+const TaskCard = memo(TaskCardComponent, (prevProps, nextProps) => {
+  // Retorna true se props são iguais (não deve re-renderizar)
+  // Retorna false se props mudaram (deve re-renderizar)
+
+  // Comparar campos principais da task
+  if (
+    prevProps.task.id !== nextProps.task.id ||
+    prevProps.task.title !== nextProps.task.title ||
+    prevProps.task.status !== nextProps.task.status ||
+    prevProps.task.priority !== nextProps.task.priority ||
+    prevProps.task.dueDate !== nextProps.task.dueDate ||
+    prevProps.task.description !== nextProps.task.description ||
+    prevProps.task.estimatedMinutes !== nextProps.task.estimatedMinutes
+  ) {
+    return false;
+  }
+
+  // Comparar subtasks (quantidade e progresso)
+  if (prevProps.task.subtasks.length !== nextProps.task.subtasks.length) {
+    return false;
+  }
+
+  const prevCompleted = prevProps.task.subtasks.filter(st => st.completed).length;
+  const nextCompleted = nextProps.task.subtasks.filter(st => st.completed).length;
+  if (prevCompleted !== nextCompleted) {
+    return false;
+  }
+
+  // Comparar tags
+  if (JSON.stringify(prevProps.task.tags) !== JSON.stringify(nextProps.task.tags)) {
+    return false;
+  }
+
+  // Props são iguais, não re-renderizar
+  return true;
 });
 
 export default TaskCard;

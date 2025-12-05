@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Activity } from '../features/timeline/types';
@@ -17,7 +17,7 @@ interface ActivityCardProps {
   onLongPress?: () => void;
 }
 
-const ActivityCard: React.FC<ActivityCardProps> = ({
+const ActivityCardComponent: React.FC<ActivityCardProps> = ({
   activity,
   onPress,
   onLongPress,
@@ -232,6 +232,34 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.xs,
     color: colors.text.tertiary,
   },
+});
+
+/**
+ * ActivityCard memoizado com comparação customizada
+ * Evita re-renders desnecessários quando apenas outras atividades mudam
+ */
+const ActivityCard = memo(ActivityCardComponent, (prevProps, nextProps) => {
+  // Retorna true se props são iguais (não deve re-renderizar)
+  // Retorna false se props mudaram (deve re-renderizar)
+
+  // Comparar campos principais da atividade
+  if (
+    prevProps.activity.id !== nextProps.activity.id ||
+    prevProps.activity.type !== nextProps.activity.type ||
+    prevProps.activity.title !== nextProps.activity.title ||
+    prevProps.activity.description !== nextProps.activity.description ||
+    prevProps.activity.timestamp !== nextProps.activity.timestamp
+  ) {
+    return false;
+  }
+
+  // Comparar metadata (JSON comparison para objeto complexo)
+  if (JSON.stringify(prevProps.activity.metadata) !== JSON.stringify(nextProps.activity.metadata)) {
+    return false;
+  }
+
+  // Props são iguais, não re-renderizar
+  return true;
 });
 
 export default ActivityCard;

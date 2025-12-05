@@ -186,28 +186,40 @@ export const calculateStreak = (activities: Activity[]): { current: number; long
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
-  // Pegar datas únicas
+  // Pegar datas únicas (YYYY-MM-DD)
   const uniqueDates = Array.from(
     new Set(sorted.map(a => new Date(a.timestamp).toISOString().split('T')[0]))
   ).sort((a, b) => b.localeCompare(a));
 
+  const today = new Date().toISOString().split('T')[0];
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
   // Calcular current streak
   let currentStreak = 0;
-  const today = new Date().toISOString().split('T')[0];
-  let checkDate = today;
+  const mostRecentActivityDate = uniqueDates[0];
 
-  for (const date of uniqueDates) {
-    if (date === checkDate) {
-      currentStreak++;
-      const d = new Date(checkDate);
-      d.setDate(d.getDate() - 1);
-      checkDate = d.toISOString().split('T')[0];
-    } else {
-      break;
+  // Streak atual só é válido se a última atividade foi hoje ou ontem
+  if (mostRecentActivityDate !== today && mostRecentActivityDate !== yesterday) {
+    currentStreak = 0; // Streak quebrado (última atividade foi há 2+ dias)
+  } else {
+    // Começar a contar do dia apropriado
+    let checkDate = mostRecentActivityDate === today ? today : yesterday;
+
+    for (const date of uniqueDates) {
+      if (date === checkDate) {
+        currentStreak++;
+        // Avançar para o dia anterior
+        const d = new Date(checkDate);
+        d.setDate(d.getDate() - 1);
+        checkDate = d.toISOString().split('T')[0];
+      } else {
+        // Gap detectado - streak atual termina aqui
+        break;
+      }
     }
   }
 
-  // Calcular longest streak
+  // Calcular longest streak (percorrer todas as datas)
   let longestStreak = 0;
   let tempStreak = 1;
 
@@ -219,8 +231,10 @@ export const calculateStreak = (activities: Activity[]): { current: number; long
     );
 
     if (diffDays === 1) {
+      // Dias consecutivos
       tempStreak++;
     } else {
+      // Gap detectado - finalizar streak temporário
       longestStreak = Math.max(longestStreak, tempStreak);
       tempStreak = 1;
     }

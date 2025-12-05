@@ -82,6 +82,117 @@ export const hasKey = async (key: string): Promise<boolean> => {
 };
 
 // ==========================================
+// 🔄 VERSIONAMENTO E VALIDAÇÃO
+// ==========================================
+
+const CURRENT_VERSION = '1.0.0';
+
+/**
+ * Interface para dados versionados
+ */
+export interface VersionedData<T> {
+  version: string;
+  data: T;
+  savedAt: string;
+}
+
+/**
+ * Type guard genérico - deve ser implementado para cada tipo específico
+ */
+export type TypeValidator<T> = (data: any) => data is T;
+
+/**
+ * Salvar dados com versionamento
+ */
+export const saveDataVersioned = async <T>(key: string, data: T): Promise<void> => {
+  try {
+    const versioned: VersionedData<T> = {
+      version: CURRENT_VERSION,
+      data,
+      savedAt: new Date().toISOString(),
+    };
+    await AsyncStorage.setItem(key, JSON.stringify(versioned));
+  } catch (error) {
+    console.error(`Erro ao salvar dados versionados (${key}):`, error);
+    throw error;
+  }
+};
+
+/**
+ * Carregar dados com validação e migração
+ */
+export const loadDataVersioned = async <T>(
+  key: string,
+  validator?: TypeValidator<T>
+): Promise<T | null> => {
+  try {
+    const jsonValue = await AsyncStorage.getItem(key);
+    if (!jsonValue) return null;
+
+    const parsed = JSON.parse(jsonValue);
+
+    // Suporte a dados antigos (sem versão)
+    if (!parsed.version) {
+      console.warn(`Dados sem versão encontrados em ${key}. Aplicando migração automática.`);
+      return migrateToVersioned(parsed, validator);
+    }
+
+    // Verificar versão
+    if (parsed.version !== CURRENT_VERSION) {
+      console.warn(
+        `Versão antiga detectada em ${key}: ${parsed.version}. Migrando para ${CURRENT_VERSION}`
+      );
+      return migrate(parsed, validator);
+    }
+
+    // Validar schema se validator fornecido
+    if (validator && !validator(parsed.data)) {
+      console.error(`Dados inválidos em ${key}. Schema não corresponde ao esperado.`);
+      return null;
+    }
+
+    return parsed.data;
+  } catch (error) {
+    console.error(`Erro ao carregar dados versionados (${key}):`, error);
+    return null;
+  }
+};
+
+/**
+ * Migrar dados antigos (sem wrapper de versão) para o formato versionado
+ */
+const migrateToVersioned = <T>(data: any, validator?: TypeValidator<T>): T | null => {
+  // Dados antigos sem wrapper de versão - assumir que são do formato antigo
+  if (validator && !validator(data)) {
+    console.error('Dados antigos não passaram na validação. Ignorando.');
+    return null;
+  }
+  return data;
+};
+
+/**
+ * Migrar dados entre versões
+ */
+const migrate = <T>(versioned: VersionedData<any>, validator?: TypeValidator<T>): T | null => {
+  // Implementar migrações específicas aqui quando necessário
+  // Por enquanto, apenas validar e retornar os dados
+  const data = versioned.data;
+
+  // Aplicar transformações de migração baseadas na versão
+  // Exemplo futuro:
+  // if (versioned.version === '0.9.0') {
+  //   data = migrateFrom0_9_0(data);
+  // }
+
+  if (validator && !validator(data)) {
+    console.error('Dados migrados não passaram na validação. Ignorando.');
+    return null;
+  }
+
+  return data;
+};
+
+// ==========================================
 // 🎯 FUNÇÕES ESPECÍFICAS POR MÓDULO
 // ==========================================
 
@@ -228,6 +339,10 @@ export default {
   removeData,
   clearAll,
   hasKey,
+
+  // Versionamento
+  saveDataVersioned,
+  loadDataVersioned,
 
   // Específicas
   saveFlows,

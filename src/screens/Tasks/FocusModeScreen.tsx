@@ -30,32 +30,21 @@ const FocusModeScreen = ({ route, navigation }: any) => {
   } = useTasks();
 
   const task = getTaskById(taskId);
-  const [timeRemaining, setTimeRemaining] = useState(0);
 
-  // Initialize timer
+  // Calcular tempo restante diretamente do Context
+  const timeRemaining = activeFocusSession
+    ? Math.max(0, activeFocusSession.duration - activeFocusSession.elapsed)
+    : 0;
+
+  // Auto-completar quando timer terminar
   useEffect(() => {
-    if (activeFocusSession) {
-      setTimeRemaining(activeFocusSession.duration - activeFocusSession.elapsed);
+    if (!activeFocusSession) return;
+
+    // Se elapsed >= duration e sessão não está mais rodando, completar
+    if (activeFocusSession.elapsed >= activeFocusSession.duration && !activeFocusSession.isRunning) {
+      handleComplete();
     }
-  }, [activeFocusSession]);
-
-  // Countdown timer
-  useEffect(() => {
-    if (!activeFocusSession || !activeFocusSession.isRunning) return;
-
-    const interval = setInterval(() => {
-      setTimeRemaining(prev => {
-        if (prev <= 1) {
-          // Timer finished
-          handleComplete();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [activeFocusSession?.isRunning]);
+  }, [activeFocusSession?.elapsed, activeFocusSession?.isRunning]);
 
   if (!task || !activeFocusSession) {
     return (

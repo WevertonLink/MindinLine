@@ -6,6 +6,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Activity, CreateActivityInput } from '../features/timeline/types';
 import { generateId } from '../features/timeline/utils';
+import { logger } from './logger';
 
 const STORAGE_KEY = '@MindinLine:timeline_activities';
 
@@ -35,7 +36,7 @@ export const addTimelineActivity = async (input: CreateActivityInput): Promise<v
     // Salvar
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedActivities));
   } catch (error) {
-    console.error('Erro ao adicionar atividade no Timeline:', error);
+    logger.error('Erro ao adicionar atividade no Timeline:', error);
     // Não lança erro para não quebrar o fluxo principal
   }
 };

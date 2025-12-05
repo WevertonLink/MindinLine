@@ -21,6 +21,7 @@
 import { Platform } from 'react-native';
 import { Task } from '../features/tasks/types';
 import { Deck } from '../features/flashcards/types';
+import { logger } from './logger';
 
 export interface NotificationOptions {
   id?: string;
@@ -55,9 +56,9 @@ export class NotificationService {
       // TODO: Inicializar biblioteca de notificações
       // const settings = await notifee.requestPermission();
       // this.hasPermission = settings.authorizationStatus >= 1;
-      console.log('📬 NotificationService: Serviço de notificações stub inicializado');
+      logger.info('📬 NotificationService: Serviço de notificações stub inicializado');
     } catch (error) {
-      console.error('Erro ao inicializar notificações:', error);
+      logger.error('Erro ao inicializar notificações:', error);
     }
   }
 
@@ -71,11 +72,11 @@ export class NotificationService {
       // this.hasPermission = settings.authorizationStatus >= 1;
       // return this.hasPermission;
 
-      console.log('📬 NotificationService: Permissão solicitada (stub)');
+      logger.info('📬 NotificationService: Permissão solicitada (stub)');
       this.hasPermission = true;
       return true;
     } catch (error) {
-      console.error('Erro ao solicitar permissão de notificações:', error);
+      logger.error('Erro ao solicitar permissão de notificações:', error);
       return false;
     }
   }
@@ -85,7 +86,7 @@ export class NotificationService {
    */
   async showNotification(options: NotificationOptions): Promise<string | null> {
     if (!this.hasPermission) {
-      console.warn('📬 NotificationService: Sem permissão para notificações');
+      logger.warn('📬 NotificationService: Sem permissão para notificações');
       return null;
     }
 
@@ -111,10 +112,10 @@ export class NotificationService {
       //   },
       // });
 
-      console.log('📬 NotificationService: Notificação exibida (stub):', options.title);
+      logger.info('📬 NotificationService: Notificação exibida (stub):', options.title);
       return options.id || `notification_${Date.now()}`;
     } catch (error) {
-      console.error('Erro ao exibir notificação:', error);
+      logger.error('Erro ao exibir notificação:', error);
       return null;
     }
   }
@@ -148,13 +149,13 @@ export class NotificationService {
       //   android: { channelId },
       // }, trigger);
 
-      console.log('📬 NotificationService: Notificação agendada (stub):', {
+      logger.info('📬 NotificationService: Notificação agendada (stub):', {
         title: options.title,
         time: options.scheduleTime,
       });
       return options.id || `scheduled_${Date.now()}`;
     } catch (error) {
-      console.error('Erro ao agendar notificação:', error);
+      logger.error('Erro ao agendar notificação:', error);
       return null;
     }
   }
@@ -166,9 +167,9 @@ export class NotificationService {
     try {
       // TODO: Implementar quando biblioteca estiver instalada
       // await notifee.cancelNotification(notificationId);
-      console.log('📬 NotificationService: Notificação cancelada (stub):', notificationId);
+      logger.info('📬 NotificationService: Notificação cancelada (stub):', notificationId);
     } catch (error) {
-      console.error('Erro ao cancelar notificação:', error);
+      logger.error('Erro ao cancelar notificação:', error);
     }
   }
 
@@ -179,9 +180,9 @@ export class NotificationService {
     try {
       // TODO: Implementar quando biblioteca estiver instalada
       // await notifee.cancelAllNotifications();
-      console.log('📬 NotificationService: Todas as notificações canceladas (stub)');
+      logger.info('📬 NotificationService: Todas as notificações canceladas (stub)');
     } catch (error) {
-      console.error('Erro ao cancelar todas as notificações:', error);
+      logger.error('Erro ao cancelar todas as notificações:', error);
     }
   }
 

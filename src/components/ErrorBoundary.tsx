@@ -7,6 +7,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors, spacing, typography, borderRadius } from '../theme/globalStyles';
 import { analyticsService } from '../services/analyticsService';
+import { logger } from '../services/logger';
 
 interface Props {
   children: ReactNode;
@@ -47,8 +48,8 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log do erro no console
-    console.error('ErrorBoundary capturou um erro:', error);
-    console.error('Informações do erro:', errorInfo);
+    logger.error('ErrorBoundary capturou um erro:', error);
+    logger.error('Informações do erro:', errorInfo);
 
     // Logar erro no serviço de analytics/crash reporting
     analyticsService.logError(error, {

@@ -26,6 +26,8 @@
  * - GoogleService-Info.plist (iOS)
  */
 
+import { logger } from './logger';
+
 export interface EventProperties {
   [key: string]: string | number | boolean | undefined;
 }
@@ -60,9 +62,9 @@ export class AnalyticsService {
     try {
       // TODO: Inicializar Firebase Analytics
       // await analytics().setAnalyticsCollectionEnabled(true);
-      console.log('📊 AnalyticsService: Serviço de analytics stub inicializado');
+      logger.info('📊 AnalyticsService: Serviço de analytics stub inicializado');
     } catch (error) {
-      console.error('Erro ao inicializar analytics:', error);
+      logger.error('Erro ao inicializar analytics:', error);
     }
   }
 
@@ -75,7 +77,7 @@ export class AnalyticsService {
     // TODO: Atualizar configuração do Firebase
     // analytics().setAnalyticsCollectionEnabled(enabled);
 
-    console.log(`📊 AnalyticsService: Analytics ${enabled ? 'habilitado' : 'desabilitado'}`);
+    logger.info(`📊 AnalyticsService: Analytics ${enabled ? 'habilitado' : 'desabilitado'}`);
   }
 
   /**
@@ -90,7 +92,7 @@ export class AnalyticsService {
     //   crashlytics().setUserId(userId);
     // }
 
-    console.log('📊 AnalyticsService: User ID definido:', userId);
+    logger.info('📊 AnalyticsService: User ID definido:', userId);
   }
 
   /**
@@ -106,7 +108,7 @@ export class AnalyticsService {
     //   }
     // });
 
-    console.log('📊 AnalyticsService: User properties definidas:', properties);
+    logger.info('📊 AnalyticsService: User properties definidas:', properties);
   }
 
   /**
@@ -118,7 +120,7 @@ export class AnalyticsService {
     // TODO: Logar no Firebase
     // analytics().logEvent(eventName, properties);
 
-    console.log(`📊 AnalyticsService: Evento "${eventName}" logado:`, properties);
+    logger.info(`📊 AnalyticsService: Evento "${eventName}" logado:`, properties);
   }
 
   /**
@@ -131,7 +133,7 @@ export class AnalyticsService {
     //   crashlytics().log(JSON.stringify(context));
     // }
 
-    console.error('📊 AnalyticsService: Erro logado:', error.message, context);
+    logger.error('📊 AnalyticsService: Erro logado:', error.message, context);
   }
 
   /**
@@ -141,7 +143,7 @@ export class AnalyticsService {
     // TODO: Adicionar ao Crashlytics
     // crashlytics().log(`${message} ${JSON.stringify(data || {})}`);
 
-    console.log('📊 AnalyticsService: Breadcrumb:', message, data);
+    logger.info('📊 AnalyticsService: Breadcrumb:', message, data);
   }
 
   // ==========================================

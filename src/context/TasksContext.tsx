@@ -20,6 +20,7 @@ import {
 import { STORAGE_KEYS, loadDataVersioned, saveDataVersioned } from '../services/storage';
 import { addTimelineActivity } from '../services/timelineService';
 import { useSettings } from './SettingsContext';
+import { logger } from '../services/logger';
 
 // Storage key para sessão ativa de foco
 const ACTIVE_FOCUS_SESSION_KEY = '@mindinline:active_focus_session';
@@ -189,7 +190,7 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
 
       // Se a sessão já terminou enquanto o app estava fechado
       if (elapsed >= session.duration) {
-        console.log('Sessão de foco expirou enquanto app estava fechado');
+        logger.info('Sessão de foco expirou enquanto app estava fechado');
         await persistActiveFocusSession(null);
         // Completar a sessão automaticamente
         setActiveFocusSession({ ...session, elapsed: session.duration, isRunning: false });

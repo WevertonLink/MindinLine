@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import DocumentPicker from 'react-native-document-picker';
+import RNFS from 'react-native-fs';
 import { useSettings } from '../../context/SettingsContext';
 import {
   globalStyles,
@@ -27,11 +29,13 @@ const SettingsScreen = ({ navigation }: any) => {
     updateSettings,
     resetSettings,
     exportData,
+    importData,
     clearAllData,
     updateUsageStats,
   } = useSettings();
 
   const [exporting, setExporting] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   const handleToggleNotifications = async (value: boolean) => {
     await updateSettings({ app: { notificationsEnabled: value } });
@@ -56,6 +60,80 @@ const SettingsScreen = ({ navigation }: any) => {
       Alert.alert('Erro', 'Não foi possível exportar os dados');
     } finally {
       setExporting(false);
+    }
+  };
+
+  const handleImportData = async () => {
+    try {
+      setImporting(true);
+
+      // Abrir file picker
+      const result = await DocumentPicker.pick({
+        type: [DocumentPicker.types.allFiles],
+        copyTo: 'cachesDirectory',
+      });
+
+      if (!result || result.length === 0) {
+        setImporting(false);
+        return;
+      }
+
+      const file = result[0];
+
+      // Verificar se tem fileCopyUri (arquivo copiado para cache)
+      const fileUri = file.fileCopyUri || file.uri;
+
+      // Ler conteúdo do arquivo
+      const fileContent = await RNFS.readFile(fileUri, 'utf8');
+      const data = JSON.parse(fileContent);
+
+      // Validar estrutura básica
+      if (!data.version || !data.exportedAt) {
+        throw new Error('Arquivo inválido - estrutura não reconhecida');
+      }
+
+      // Mostrar preview e confirmar
+      const flowsCount = data.flows?.length || 0;
+      const decksCount = data.flashcards?.length || 0;
+      const tasksCount = data.tasks?.length || 0;
+      const activitiesCount = data.activities?.length || 0;
+      const exportDate = new Date(data.exportedAt).toLocaleDateString('pt-BR');
+
+      Alert.alert(
+        'Importar Dados',
+        `Isso irá SUBSTITUIR todos os dados atuais.\n\nBackup de: ${exportDate}\n\nConteúdo:\n• ${flowsCount} Trilhas\n• ${decksCount} Decks de Flashcards\n• ${tasksCount} Tarefas\n• ${activitiesCount} Atividades\n\nDeseja continuar?`,
+        [
+          { text: 'Cancelar', style: 'cancel', onPress: () => setImporting(false) },
+          {
+            text: 'Importar',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await importData(data);
+                // O Alert de sucesso já está no importData do Context
+                setImporting(false);
+              } catch (error) {
+                Alert.alert('Erro', 'Não foi possível importar os dados');
+                setImporting(false);
+              }
+            },
+          },
+        ],
+        { onDismiss: () => setImporting(false) }
+      );
+    } catch (error: any) {
+      if (DocumentPicker.isCancel(error)) {
+        // Usuário cancelou a seleção
+        setImporting(false);
+        return;
+      }
+
+      console.error('Erro ao importar dados:', error);
+      Alert.alert(
+        'Erro',
+        error.message || 'Não foi possível importar os dados. Verifique se o arquivo é válido.'
+      );
+      setImporting(false);
     }
   };
 
@@ -283,14 +361,14 @@ const SettingsScreen = ({ navigation }: any) => {
 
           <View style={globalStyles.divider} />
 
-          <Pressable style={styles.settingRow} disabled>
+          <Pressable style={styles.settingRow} onPress={handleImportData} disabled={importing}>
             <View style={styles.settingLeft}>
-              <Icon name="cloud-upload-outline" size={20} color={colors.text.tertiary} />
-              <Text style={[styles.settingLabel, { color: colors.text.tertiary }]}>
+              <Icon name="cloud-upload-outline" size={20} color={colors.accent.primary} />
+              <Text style={styles.settingLabel}>
                 Importar Dados
               </Text>
             </View>
-            <Text style={styles.comingSoon}>Em breve</Text>
+            {importing && <ActivityIndicator size="small" color={colors.accent.primary} />}
           </Pressable>
 
           <View style={globalStyles.divider} />

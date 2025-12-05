@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Deck } from '../features/flashcards/types';
@@ -16,7 +16,7 @@ interface DeckCardProps {
   onLongPress?: () => void;
 }
 
-const DeckCard: React.FC<DeckCardProps> = ({ deck, onPress, onLongPress }) => {
+const DeckCardComponent: React.FC<DeckCardProps> = ({ deck, onPress, onLongPress }) => {
   return (
     <Pressable
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
@@ -149,6 +149,32 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.xs,
     color: colors.text.tertiary,
   },
+});
+
+/**
+ * DeckCard memoizado com comparação customizada
+ * Evita re-renders desnecessários quando apenas outros decks mudam
+ */
+const DeckCard = memo(DeckCardComponent, (prevProps, nextProps) => {
+  // Retorna true se props são iguais (não deve re-renderizar)
+  // Retorna false se props mudaram (deve re-renderizar)
+
+  // Comparar campos principais do deck
+  if (
+    prevProps.deck.id !== nextProps.deck.id ||
+    prevProps.deck.title !== nextProps.deck.title ||
+    prevProps.deck.description !== nextProps.deck.description ||
+    prevProps.deck.category !== nextProps.deck.category ||
+    prevProps.deck.totalCards !== nextProps.deck.totalCards ||
+    prevProps.deck.reviewCards !== nextProps.deck.reviewCards ||
+    prevProps.deck.masteredCards !== nextProps.deck.masteredCards ||
+    prevProps.deck.updatedAt !== nextProps.deck.updatedAt
+  ) {
+    return false;
+  }
+
+  // Props são iguais, não re-renderizar
+  return true;
 });
 
 export default DeckCard;

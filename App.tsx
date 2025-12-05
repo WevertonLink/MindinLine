@@ -17,31 +17,34 @@ import { FlashcardsProvider } from './src/context/FlashcardsContext';
 import { TasksProvider } from './src/context/TasksContext';
 import { TimelineProvider } from './src/context/TimelineContext';
 import { SettingsProvider } from './src/context/SettingsContext';
+import { ErrorBoundary } from './src/components/ErrorBoundary';
 
 function App() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <SettingsProvider>
-          <FlowKeeperProvider>
-            <FlashcardsProvider>
-              <TasksProvider>
-                <TimelineProvider>
-                  <StatusBar
-                    barStyle="light-content"
-                    backgroundColor={colors.background.primary}
-                    translucent={false}
-                  />
-                  <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.primary }} edges={['top']}>
-                    <AppNavigator />
-                  </SafeAreaView>
-                </TimelineProvider>
-              </TasksProvider>
-            </FlashcardsProvider>
-          </FlowKeeperProvider>
-        </SettingsProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ErrorBoundary>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <SettingsProvider>
+            <FlowKeeperProvider>
+              <FlashcardsProvider>
+                <TasksProvider>
+                  <TimelineProvider>
+                    <StatusBar
+                      barStyle="light-content"
+                      backgroundColor={colors.background.primary}
+                      translucent={false}
+                    />
+                    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.primary }} edges={['top']}>
+                      <AppNavigator />
+                    </SafeAreaView>
+                  </TimelineProvider>
+                </TasksProvider>
+              </FlashcardsProvider>
+            </FlowKeeperProvider>
+          </SettingsProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 }
 

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   Task,
   Subtask,
@@ -10,14 +11,19 @@ import {
   TaskStatus,
   ActiveFocusSession,
   FocusModeConfig,
+  isTaskArray,
 } from '../features/tasks/types';
 import {
   generateId,
   calculateStats,
 } from '../features/tasks/utils';
-import { saveTasks, loadTasks } from '../services/storage';
+import { STORAGE_KEYS, loadDataVersioned, saveDataVersioned } from '../services/storage';
 import { addTimelineActivity } from '../services/timelineService';
 import { useSettings } from './SettingsContext';
+import { logger } from '../services/logger';
+
+// Storage key para sessão ativa de foco
+const ACTIVE_FOCUS_SESSION_KEY = '@mindinline:active_focus_session';
 
 // ==========================================
 // ✅ TASKS CONTEXT
@@ -68,19 +74,12 @@ interface TasksProviderProps {
 export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
   const { settings } = useSettings();
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [stats, setStats] = useState<TasksStats>({
-    totalTasks: 0,
-    todoTasks: 0,
-    inProgressTasks: 0,
-    completedTasks: 0,
-    cancelledTasks: 0,
-    overdueTasks: 0,
-    dueTodayTasks: 0,
-    totalFocusTime: 0,
-    completionRate: 0,
-  });
   const [loading, setLoading] = useState(true);
   const [activeFocusSession, setActiveFocusSession] = useState<ActiveFocusSession | null>(null);
+
+  // Calcular stats diretamente de tasks com memoização
+  // Só recalcula quando tasks muda, evitando re-renders desnecessários
+  const stats = useMemo(() => calculateStats(tasks), [tasks]);
 
   // Sincronizar focusModeConfig com o SettingsContext
   const focusModeConfig: FocusModeConfig = {
@@ -96,19 +95,53 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
   // Carregar tasks do storage ao iniciar
   useEffect(() => {
     loadTasksFromStorage();
+    restoreActiveFocusSession();
   }, []);
 
-  // Atualizar stats sempre que tasks mudar
+  // Atualizar elapsed a cada segundo quando a sessão está rodando
   useEffect(() => {
-    setStats(calculateStats(tasks));
-  }, [tasks]);
+    if (!activeFocusSession?.isRunning) return;
+
+    const interval = setInterval(() => {
+      setActiveFocusSession(prev => {
+        if (!prev || !prev.isRunning) return prev;
+
+        const newElapsed = prev.elapsed + 1;
+
+        // Auto-completar quando atingir duração
+        if (newElapsed >= prev.duration) {
+          // Marcar como não-rodando para evitar loop
+          const completed = { ...prev, elapsed: prev.duration, isRunning: false };
+          persistActiveFocusSession(completed);
+          // completeFocusSession será chamado pela UI quando detectar isso
+          return completed;
+        }
+
+        const updated = { ...prev, elapsed: newElapsed };
+        // Persistir a cada 5 segundos para evitar muitas escritas
+        if (newElapsed % 5 === 0) {
+          persistActiveFocusSession(updated);
+        }
+        return updated;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [activeFocusSession?.isRunning, activeFocusSession?.sessionId]);
+
+  // Persistir sessão quando mudar (exceto updates frequentes de elapsed)
+  useEffect(() => {
+    if (activeFocusSession && !activeFocusSession.isRunning) {
+      persistActiveFocusSession(activeFocusSession);
+    }
+  }, [activeFocusSession?.isRunning, activeFocusSession?.taskId]);
 
   // Carregar tasks do AsyncStorage
   const loadTasksFromStorage = async () => {
     try {
       setLoading(true);
-      const savedTasks = await loadTasks();
-      if (savedTasks && Array.isArray(savedTasks)) {
+      const savedTasks = await loadDataVersioned<Task[]>(STORAGE_KEYS.TASKS, isTaskArray);
+      if (savedTasks) {
         setTasks(savedTasks);
       }
     } catch (error) {
@@ -121,11 +154,54 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
   // Salvar tasks no AsyncStorage
   const saveTasksToStorage = async (updatedTasks: Task[]) => {
     try {
-      await saveTasks(updatedTasks);
+      await saveDataVersioned(STORAGE_KEYS.TASKS, updatedTasks);
       setTasks(updatedTasks);
     } catch (error) {
       console.error('Erro ao salvar tasks:', error);
       throw error;
+    }
+  };
+
+  // Persistir sessão ativa de foco
+  const persistActiveFocusSession = async (session: ActiveFocusSession | null) => {
+    try {
+      if (session) {
+        await AsyncStorage.setItem(ACTIVE_FOCUS_SESSION_KEY, JSON.stringify(session));
+      } else {
+        await AsyncStorage.removeItem(ACTIVE_FOCUS_SESSION_KEY);
+      }
+    } catch (error) {
+      console.error('Erro ao persistir sessão de foco:', error);
+    }
+  };
+
+  // Restaurar sessão ativa de foco
+  const restoreActiveFocusSession = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(ACTIVE_FOCUS_SESSION_KEY);
+      if (!stored) return;
+
+      const session: ActiveFocusSession = JSON.parse(stored);
+
+      // Recalcular elapsed baseado em startedAt
+      const startedAt = new Date(session.startedAt).getTime();
+      const now = Date.now();
+      const elapsed = Math.floor((now - startedAt) / 1000);
+
+      // Se a sessão já terminou enquanto o app estava fechado
+      if (elapsed >= session.duration) {
+        logger.info('Sessão de foco expirou enquanto app estava fechado');
+        await persistActiveFocusSession(null);
+        // Completar a sessão automaticamente
+        setActiveFocusSession({ ...session, elapsed: session.duration, isRunning: false });
+        // Nota: completeFocusSession será chamado pela UI quando detectar elapsed >= duration
+        return;
+      }
+
+      // Restaurar sessão com elapsed atualizado
+      setActiveFocusSession({ ...session, elapsed, isRunning: session.isRunning });
+    } catch (error) {
+      console.error('Erro ao restaurar sessão de foco:', error);
     }
   };
 
@@ -353,23 +429,28 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
     };
 
     setActiveFocusSession(session);
+    await persistActiveFocusSession(session);
   };
 
   const pauseFocusSession = async (): Promise<void> => {
     if (activeFocusSession) {
-      setActiveFocusSession({
+      const paused = {
         ...activeFocusSession,
         isRunning: false,
-      });
+      };
+      setActiveFocusSession(paused);
+      await persistActiveFocusSession(paused);
     }
   };
 
   const resumeFocusSession = async (): Promise<void> => {
     if (activeFocusSession) {
-      setActiveFocusSession({
+      const resumed = {
         ...activeFocusSession,
         isRunning: true,
-      });
+      };
+      setActiveFocusSession(resumed);
+      await persistActiveFocusSession(resumed);
     }
   };
 
@@ -428,10 +509,12 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
     }
 
     setActiveFocusSession(null);
+    await persistActiveFocusSession(null);
   };
 
   const cancelFocusSession = async (): Promise<void> => {
     setActiveFocusSession(null);
+    await persistActiveFocusSession(null);
   };
 
   // updateFocusModeConfig now does nothing since config comes from SettingsContext

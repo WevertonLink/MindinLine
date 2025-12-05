@@ -6,8 +6,16 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx}\"",
+    "type-check": "tsc --noEmit",
+    "validate": "npm run lint && npm run format:check && npm run type-check && npm test",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:verbose": "jest --verbose"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
@@ -47,5 +55,40 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "jest": {
+    "preset": "react-native",
+    "setupFiles": [
+      "./jest.setup.js"
+    ],
+    "transformIgnorePatterns": [
+      "node_modules/(?!(react-native|@react-native|@react-navigation|react-native-vector-icons|react-native-reanimated|react-native-gesture-handler)/)"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.test.(ts|tsx|js)",
+      "**/?(*.)+(spec|test).(ts|tsx|js)"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}",
+      "!src/**/*.d.ts",
+      "!src/**/__tests__/**",
+      "!src/**/types.ts"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 70,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
+      }
+    }
   }
 }

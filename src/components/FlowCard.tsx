@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Flow } from '../features/flowkeeper/types';
@@ -26,7 +26,7 @@ interface FlowCardProps {
   onLongPress?: () => void;
 }
 
-const FlowCard: React.FC<FlowCardProps> = ({ flow, onPress, onLongPress }) => {
+const FlowCardComponent: React.FC<FlowCardProps> = ({ flow, onPress, onLongPress }) => {
   const statusColor = getStatusColor(flow.status);
 
   return (
@@ -193,6 +193,32 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.xs,
     color: colors.text.tertiary,
   },
+});
+
+/**
+ * FlowCard memoizado com comparação customizada
+ * Evita re-renders desnecessários quando apenas outros flows mudam
+ */
+const FlowCard = memo(FlowCardComponent, (prevProps, nextProps) => {
+  // Retorna true se props são iguais (não deve re-renderizar)
+  // Retorna false se props mudaram (deve re-renderizar)
+
+  // Comparar campos principais do flow
+  if (
+    prevProps.flow.id !== nextProps.flow.id ||
+    prevProps.flow.title !== nextProps.flow.title ||
+    prevProps.flow.description !== nextProps.flow.description ||
+    prevProps.flow.category !== nextProps.flow.category ||
+    prevProps.flow.status !== nextProps.flow.status ||
+    prevProps.flow.progress !== nextProps.flow.progress ||
+    prevProps.flow.steps.length !== nextProps.flow.steps.length ||
+    prevProps.flow.updatedAt !== nextProps.flow.updatedAt
+  ) {
+    return false;
+  }
+
+  // Props são iguais, não re-renderizar
+  return true;
 });
 
 export default FlowCard;

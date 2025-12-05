@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logger } from './logger';
 
 // ==========================================
 // 💾 SERVIÇO DE STORAGE
@@ -26,7 +27,7 @@ export const saveData = async <T>(key: string, data: T): Promise<void> => {
     const jsonValue = JSON.stringify(data);
     await AsyncStorage.setItem(key, jsonValue);
   } catch (error) {
-    console.error(`Erro ao salvar dados (${key}):`, error);
+    logger.error(`Erro ao salvar dados (${key}):`, error);
     throw error;
   }
 };
@@ -39,7 +40,7 @@ export const loadData = async <T>(key: string): Promise<T | null> => {
     const jsonValue = await AsyncStorage.getItem(key);
     return jsonValue != null ? JSON.parse(jsonValue) : null;
   } catch (error) {
-    console.error(`Erro ao carregar dados (${key}):`, error);
+    logger.error(`Erro ao carregar dados (${key}):`, error);
     return null;
   }
 };
@@ -51,7 +52,7 @@ export const removeData = async (key: string): Promise<void> => {
   try {
     await AsyncStorage.removeItem(key);
   } catch (error) {
-    console.error(`Erro ao remover dados (${key}):`, error);
+    logger.error(`Erro ao remover dados (${key}):`, error);
     throw error;
   }
 };
@@ -63,7 +64,7 @@ export const clearAll = async (): Promise<void> => {
   try {
     await AsyncStorage.clear();
   } catch (error) {
-    console.error('Erro ao limpar todos os dados:', error);
+    logger.error('Erro ao limpar todos os dados:', error);
     throw error;
   }
 };
@@ -76,9 +77,120 @@ export const hasKey = async (key: string): Promise<boolean> => {
     const keys = await AsyncStorage.getAllKeys();
     return keys.includes(key);
   } catch (error) {
-    console.error(`Erro ao verificar existência da key (${key}):`, error);
+    logger.error(`Erro ao verificar existência da key (${key}):`, error);
     return false;
   }
+};
+
+// ==========================================
+// 🔄 VERSIONAMENTO E VALIDAÇÃO
+// ==========================================
+
+const CURRENT_VERSION = '1.0.0';
+
+/**
+ * Interface para dados versionados
+ */
+export interface VersionedData<T> {
+  version: string;
+  data: T;
+  savedAt: string;
+}
+
+/**
+ * Type guard genérico - deve ser implementado para cada tipo específico
+ */
+export type TypeValidator<T> = (data: any) => data is T;
+
+/**
+ * Salvar dados com versionamento
+ */
+export const saveDataVersioned = async <T>(key: string, data: T): Promise<void> => {
+  try {
+    const versioned: VersionedData<T> = {
+      version: CURRENT_VERSION,
+      data,
+      savedAt: new Date().toISOString(),
+    };
+    await AsyncStorage.setItem(key, JSON.stringify(versioned));
+  } catch (error) {
+    logger.error(`Erro ao salvar dados versionados (${key}):`, error);
+    throw error;
+  }
+};
+
+/**
+ * Carregar dados com validação e migração
+ */
+export const loadDataVersioned = async <T>(
+  key: string,
+  validator?: TypeValidator<T>
+): Promise<T | null> => {
+  try {
+    const jsonValue = await AsyncStorage.getItem(key);
+    if (!jsonValue) return null;
+
+    const parsed = JSON.parse(jsonValue);
+
+    // Suporte a dados antigos (sem versão)
+    if (!parsed.version) {
+      logger.warn(`Dados sem versão encontrados em ${key}. Aplicando migração automática.`);
+      return migrateToVersioned(parsed, validator);
+    }
+
+    // Verificar versão
+    if (parsed.version !== CURRENT_VERSION) {
+      logger.warn(
+        `Versão antiga detectada em ${key}: ${parsed.version}. Migrando para ${CURRENT_VERSION}`
+      );
+      return migrate(parsed, validator);
+    }
+
+    // Validar schema se validator fornecido
+    if (validator && !validator(parsed.data)) {
+      logger.error(`Dados inválidos em ${key}. Schema não corresponde ao esperado.`);
+      return null;
+    }
+
+    return parsed.data;
+  } catch (error) {
+    logger.error(`Erro ao carregar dados versionados (${key}):`, error);
+    return null;
+  }
+};
+
+/**
+ * Migrar dados antigos (sem wrapper de versão) para o formato versionado
+ */
+const migrateToVersioned = <T>(data: any, validator?: TypeValidator<T>): T | null => {
+  // Dados antigos sem wrapper de versão - assumir que são do formato antigo
+  if (validator && !validator(data)) {
+    logger.error('Dados antigos não passaram na validação. Ignorando.');
+    return null;
+  }
+  return data;
+};
+
+/**
+ * Migrar dados entre versões
+ */
+const migrate = <T>(versioned: VersionedData<any>, validator?: TypeValidator<T>): T | null => {
+  // Implementar migrações específicas aqui quando necessário
+  // Por enquanto, apenas validar e retornar os dados
+  const data = versioned.data;
+
+  // Aplicar transformações de migração baseadas na versão
+  // Exemplo futuro:
+  // if (versioned.version === '0.9.0') {
+  //   data = migrateFrom0_9_0(data);
+  // }
+
+  if (validator && !validator(data)) {
+    logger.error('Dados migrados não passaram na validação. Ignorando.');
+    return null;
+  }
+
+  return data;
 };
 
 // ==========================================
@@ -164,7 +276,7 @@ export const exportAllData = async (): Promise<Record<string, any>> => {
 
     return data;
   } catch (error) {
-    console.error('Erro ao exportar dados:', error);
+    logger.error('Erro ao exportar dados:', error);
     throw error;
   }
 };
@@ -181,7 +293,7 @@ export const importAllData = async (data: Record<string, any>): Promise<void> =>
 
     await AsyncStorage.multiSet(entries as [string, string][]);
   } catch (error) {
-    console.error('Erro ao importar dados:', error);
+    logger.error('Erro ao importar dados:', error);
     throw error;
   }
 };
@@ -207,7 +319,7 @@ export const getStorageSize = async (): Promise<number> => {
 
     return totalSize;
   } catch (error) {
-    console.error('Erro ao calcular tamanho do storage:', error);
+    logger.error('Erro ao calcular tamanho do storage:', error);
     return 0;
   }
 };
@@ -228,6 +340,10 @@ export default {
   removeData,
   clearAll,
   hasKey,
+
+  // Versionamento
+  saveDataVersioned,
+  loadDataVersioned,
 
   // Específicas
   saveFlows,

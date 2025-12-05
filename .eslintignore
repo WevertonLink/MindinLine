@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+.yarn/
+
+# Build outputs
+android/
+ios/
+.expo/
+dist/
+build/
+
+# Generated files
+*.lock
+metro.config.js
+babel.config.js
+jest.config.js
+
+# Coverage
+coverage/
+
+# Misc
+.DS_Store
+*.log

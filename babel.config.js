@@ -1,6 +1,7 @@
 module.exports = {
   presets: ['module:@react-native/babel-preset'],
   plugins: [
-    'react-native-reanimated/plugin', // DEVE ser o último plugin
+    // Só adiciona o plugin do reanimated quando NÃO estiver rodando testes
+    ...(process.env.NODE_ENV !== 'test' ? ['react-native-reanimated/plugin'] : []),
   ],
 };

@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import DocumentPicker from 'react-native-document-picker';
+import { pick, types as DocumentPickerTypes } from '@react-native-documents/picker';
 import RNFS from 'react-native-fs';
 import { useSettings } from '../../context/SettingsContext';
 import {
@@ -68,20 +68,18 @@ const SettingsScreen = ({ navigation }: any) => {
       setImporting(true);
 
       // Abrir file picker
-      const result = await DocumentPicker.pick({
-        type: [DocumentPicker.types.allFiles],
+      const result = await pick({
+        type: [DocumentPickerTypes.allFiles],
         copyTo: 'cachesDirectory',
       });
 
-      if (!result || result.length === 0) {
+      if (!result || !result.uri) {
         setImporting(false);
         return;
       }
 
-      const file = result[0];
-
       // Verificar se tem fileCopyUri (arquivo copiado para cache)
-      const fileUri = file.fileCopyUri || file.uri;
+      const fileUri = result.fileCopyUri || result.uri;
 
       // Ler conteúdo do arquivo
       const fileContent = await RNFS.readFile(fileUri, 'utf8');
@@ -122,8 +120,8 @@ const SettingsScreen = ({ navigation }: any) => {
         { onDismiss: () => setImporting(false) }
       );
     } catch (error: any) {
-      if (DocumentPicker.isCancel(error)) {
-        // Usuário cancelou a seleção
+      // Usuário cancelou ou erro ao selecionar
+      if (error && error.code === 'ERR_PICKER_CANCELLED') {
         setImporting(false);
         return;
       }

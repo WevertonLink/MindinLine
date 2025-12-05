@@ -6,6 +6,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors, spacing, typography, borderRadius } from '../theme/globalStyles';
+import { analyticsService } from '../services/analyticsService';
 
 interface Props {
   children: ReactNode;
@@ -45,9 +46,21 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log do erro
+    // Log do erro no console
     console.error('ErrorBoundary capturou um erro:', error);
     console.error('Informações do erro:', errorInfo);
+
+    // Logar erro no serviço de analytics/crash reporting
+    analyticsService.logError(error, {
+      componentStack: errorInfo.componentStack,
+      errorBoundary: true,
+    });
+
+    // Adicionar breadcrumb para rastreamento
+    analyticsService.addBreadcrumb('Error caught by ErrorBoundary', {
+      errorMessage: error.message,
+      errorStack: error.stack?.substring(0, 200), // Primeiros 200 chars
+    });
 
     // Atualizar estado com informações do erro
     this.setState({ errorInfo });

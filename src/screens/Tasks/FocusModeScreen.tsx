@@ -5,9 +5,11 @@ import {
   StyleSheet,
   Pressable,
   Alert,
+  Vibration,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTasks } from '../../context/TasksContext';
+import { useSettings } from '../../context/SettingsContext';
 import {
   globalStyles,
   colors,
@@ -28,6 +30,7 @@ const FocusModeScreen = ({ route, navigation }: any) => {
     completeFocusSession,
     cancelFocusSession,
   } = useTasks();
+  const { settings } = useSettings();
 
   const task = getTaskById(taskId);
 
@@ -72,7 +75,22 @@ const FocusModeScreen = ({ route, navigation }: any) => {
   };
 
   const handleComplete = async () => {
+    // Vibração quando sessão completar (se habilitado)
+    if (settings.focusMode.vibrationEnabled) {
+      // Padrão de vibração: [pausa, vibra, pausa, vibra]
+      // 0ms pausa inicial, 500ms vibra, 200ms pausa, 500ms vibra
+      Vibration.vibrate([0, 500, 200, 500]);
+    }
+
+    // TODO: Tocar som quando sessão completar (se habilitado)
+    // if (settings.focusMode.soundEnabled) {
+    //   // Requer instalação de biblioteca de áudio (react-native-sound ou expo-av)
+    //   // e adicionar arquivo de áudio em assets/sounds/timer_complete.mp3
+    //   sound.play();
+    // }
+
     await completeFocusSession();
+
     Alert.alert(
       'Sessão Concluída!',
       `Você completou uma sessão de ${isFocusMode ? 'foco' : 'pausa'}!`,

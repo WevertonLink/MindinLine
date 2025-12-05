@@ -1,2 +1,0 @@
-with:
-  token: ${{ secrets.GH_TOKEN }}

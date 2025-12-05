@@ -9,8 +9,9 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useFlashcards } from '../../context/FlashcardsContext';
+import { useSettings } from '../../context/SettingsContext';
 import { RecallDifficulty, Flashcard } from '../../features/flashcards/types';
-import { getCardsToStudy, formatNextReview } from '../../features/flashcards/utils';
+import { getCardsToStudy, formatNextReview, shuffleArray } from '../../features/flashcards/utils';
 import {
   globalStyles,
   colors,
@@ -22,6 +23,7 @@ import {
 const StudyModeScreen = ({ route, navigation }: any) => {
   const { deckId } = route.params;
   const { getDeckById, reviewFlashcard } = useFlashcards();
+  const { settings } = useSettings();
 
   const deck = getDeckById(deckId);
   const [cardsToStudy, setCardsToStudy] = useState<Flashcard[]>([]);
@@ -36,13 +38,19 @@ const StudyModeScreen = ({ route, navigation }: any) => {
   // Carregar cards ao iniciar
   useEffect(() => {
     if (deck) {
-      const cards = getCardsToStudy(deck);
+      let cards = getCardsToStudy(deck);
+
+      // Embaralhar se configurado
+      if (settings.flashcards.shuffleCards) {
+        cards = shuffleArray(cards);
+      }
+
       setCardsToStudy(cards);
       if (cards.length === 0) {
         setSessionCompleted(true);
       }
     }
-  }, [deck]);
+  }, [deck, settings.flashcards.shuffleCards]);
 
   // Se deck não encontrado ou sem cards (e sessão não foi apenas completada)
   if (!deck || (cardsToStudy.length === 0 && !sessionCompleted)) {
@@ -67,6 +75,27 @@ const StudyModeScreen = ({ route, navigation }: any) => {
 
   const currentCard = cardsToStudy[currentIndex];
   const progress = ((currentIndex + 1) / cardsToStudy.length) * 100;
+
+  // Validação de currentCard
+  if (!currentCard) {
+    return (
+      <View style={[globalStyles.container, globalStyles.centered]}>
+        <Icon name="alert-circle-outline" size={80} color={colors.status.warning} />
+        <Text style={[globalStyles.title, { marginTop: spacing.lg }]}>
+          Nenhum Card Disponível
+        </Text>
+        <Text style={globalStyles.subtitle}>
+          Não há flashcards para estudar no momento
+        </Text>
+        <Pressable
+          style={[globalStyles.buttonPrimary, { marginTop: spacing.xl }]}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={globalStyles.buttonText}>Voltar</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   // Handler para flip
   const handleFlip = () => {
@@ -378,8 +407,12 @@ const styles = StyleSheet.create({
     color: colors.text.tertiary,
   },
   difficultyContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     padding: spacing.lg,
-    backgroundColor: colors.background.primary,
+    backgroundColor: 'rgba(10, 14, 39, 0.95)',
     borderTopWidth: 1,
     borderTopColor: colors.glass.border,
   },
@@ -413,8 +446,13 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.semibold,
   },
   skipHint: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     padding: spacing.lg,
     alignItems: 'center',
+    backgroundColor: 'rgba(10, 14, 39, 0.7)',
   },
   skipHintText: {
     fontSize: typography.fontSize.sm,

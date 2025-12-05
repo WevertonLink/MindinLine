@@ -300,10 +300,14 @@ export const FlashcardsProvider: React.FC<FlashcardsProviderProps> = ({ children
     await saveDecksToStorage(updatedDecks);
 
     // Registrar no Timeline
+    const cardPreview = flashcard?.front
+      ? `Card: ${flashcard.front.substring(0, 50)}${flashcard.front.length > 50 ? '...' : ''}`
+      : 'Card revisado';
+
     await addTimelineActivity({
       type: 'flashcard_review',
       title: `Revisão: ${deck.title}`,
-      description: `Card: ${flashcard.front.substring(0, 50)}${flashcard.front.length > 50 ? '...' : ''}`,
+      description: cardPreview,
       metadata: {
         deckId: deck.id,
         deckTitle: deck.title,

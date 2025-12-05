@@ -189,10 +189,10 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
               <View key={card.id} style={styles.cardItem}>
                 <View style={styles.cardContent}>
                   <Text style={styles.cardFront} numberOfLines={2}>
-                    {card.front}
+                    {card?.front || 'Sem conteúdo'}
                   </Text>
                   <Text style={styles.cardBack} numberOfLines={1}>
-                    {card.back}
+                    {card?.back || 'Sem conteúdo'}
                   </Text>
                   {card.repetitions > 0 && (
                     <View style={styles.cardStats}>
@@ -206,7 +206,7 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
 
                 <Pressable
                   style={styles.deleteCardButton}
-                  onPress={() => handleDeleteCard(card.id, card.front)}
+                  onPress={() => handleDeleteCard(card.id, card?.front || 'Card')}
                 >
                   <Icon name="trash-outline" size={20} color={colors.status.error} />
                 </Pressable>

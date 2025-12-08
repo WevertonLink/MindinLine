@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,8 +6,11 @@ import {
   ScrollView,
   Pressable,
   Alert,
+  Share,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { pick, types as DocumentPickerTypes } from '@react-native-documents/picker';
+import RNFS from 'react-native-fs';
 import { useFlashcards } from '../../context/FlashcardsContext';
 import EmptyState from '../../components/EmptyState';
 import {
@@ -21,7 +24,9 @@ import { formatRelativeDate, getCardsToStudy } from '../../features/flashcards/u
 
 const DeckDetailScreen = ({ route, navigation }: any) => {
   const { deckId } = route.params;
-  const { getDeckById, deleteDeck, deleteFlashcard } = useFlashcards();
+  const { getDeckById, deleteDeck, deleteFlashcard, exportDeck, importDeck } = useFlashcards();
+  const [exporting, setExporting] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   const deck = getDeckById(deckId);
 
@@ -96,6 +101,84 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
     navigation.navigate('StudyMode', { deckId });
   };
 
+  // Handler para exportar deck
+  const handleExportDeck = async () => {
+    try {
+      setExporting(true);
+      const deckData = await exportDeck(deckId);
+
+      // Em uma versão futura, salvar o arquivo e compartilhar
+      // Por enquanto, apenas mostrar preview
+      Alert.alert(
+        'Deck Exportado',
+        `Deck "${deck.title}" com ${deck.totalCards} cards pronto para export.\n\nEm uma versão futura, você poderá salvar e compartilhar este arquivo.`,
+        [
+          {
+            text: 'Ver JSON',
+            onPress: () => Alert.alert('JSON Preview', deckData.substring(0, 500) + '...'),
+          },
+          { text: 'OK' },
+        ]
+      );
+    } catch (error: any) {
+      Alert.alert('Erro', error.message || 'Não foi possível exportar o deck');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // Handler para importar deck
+  const handleImportDeck = async () => {
+    try {
+      setImporting(true);
+
+      // Abrir file picker
+      const result = await pick({
+        type: [DocumentPickerTypes.allFiles],
+        copyTo: 'cachesDirectory',
+      });
+
+      if (!result || !result.uri) {
+        setImporting(false);
+        return;
+      }
+
+      // Verificar se tem fileCopyUri (arquivo copiado para cache)
+      const fileUri = result.fileCopyUri || result.uri;
+
+      // Ler conteúdo do arquivo
+      const fileContent = await RNFS.readFile(fileUri, 'utf8');
+
+      // Tentar importar
+      await importDeck(fileContent);
+
+      Alert.alert(
+        'Sucesso',
+        'Deck importado com sucesso! Volte para a tela inicial para vê-lo.',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('FlashcardsHome'),
+          },
+        ]
+      );
+      setImporting(false);
+    } catch (error: any) {
+      // Usuário cancelou
+      if (error && error.code === 'ERR_PICKER_CANCELLED') {
+        setImporting(false);
+        return;
+      }
+
+      console.error('Erro ao importar deck:', error);
+      Alert.alert(
+        'Erro',
+        error.message || 'Não foi possível importar o deck. Verifique se o arquivo é válido.'
+      );
+      setImporting(false);
+    }
+  };
+
   return (
     <View style={globalStyles.container}>
       <ScrollView
@@ -168,6 +251,41 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
               <Icon name="add" size={20} color={colors.text.primary} />
               <Text style={[globalStyles.buttonText, { marginLeft: spacing.xs }]}>
                 Adicionar Card
+              </Text>
+            </Pressable>
+          </View>
+
+          {/* Export/Import buttons */}
+          <View style={styles.secondaryButtons}>
+            <Pressable
+              style={[globalStyles.buttonSecondary, styles.secondaryButton]}
+              onPress={handleExportDeck}
+              disabled={exporting}
+            >
+              <Icon name="download-outline" size={18} color={colors.text.secondary} />
+              <Text style={[globalStyles.buttonTextSecondary, { marginLeft: spacing.xs }]}>
+                {exporting ? 'Exportando...' : 'Exportar'}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={[globalStyles.buttonSecondary, styles.secondaryButton]}
+              onPress={handleImportDeck}
+              disabled={importing}
+            >
+              <Icon name="cloud-upload-outline" size={18} color={colors.text.secondary} />
+              <Text style={[globalStyles.buttonTextSecondary, { marginLeft: spacing.xs }]}>
+                {importing ? 'Importando...' : 'Importar'}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={[globalStyles.buttonSecondary, styles.secondaryButton]}
+              onPress={handleDeleteDeck}
+            >
+              <Icon name="trash-outline" size={18} color={colors.status.error} />
+              <Text style={[globalStyles.buttonTextSecondary, { marginLeft: spacing.xs, color: colors.status.error }]}>
+                Deletar
               </Text>
             </Pressable>
           </View>
@@ -298,6 +416,15 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
   },
+  secondaryButtons: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  secondaryButton: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+  },
   lastStudied: {
     fontSize: typography.fontSize.xs,
     color: colors.text.tertiary,
@@ -349,23 +476,6 @@ const styles = StyleSheet.create({
   deleteCardButton: {
     padding: spacing.sm,
     marginLeft: spacing.sm,
-  },
-  deleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.3)',
-    paddingVertical: spacing.md,
-    marginTop: spacing.xl,
-  },
-  deleteButtonText: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.status.error,
   },
 });
 

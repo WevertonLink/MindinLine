@@ -53,6 +53,10 @@ interface FlashcardsContextData {
   // Utilitários
   refreshDecks: () => Promise<void>;
 
+  // Export/Import
+  exportDeck: (deckId: string) => Promise<string>;
+  importDeck: (deckData: string) => Promise<void>;
+
   // Integração com Trilhas
   createDeckFromSteps: (
     flowId: string,
@@ -390,6 +394,83 @@ export const FlashcardsProvider: React.FC<FlashcardsProviderProps> = ({ children
   };
 
   // ==========================================
+  // EXPORT/IMPORT
+  // ==========================================
+
+  const exportDeck = async (deckId: string): Promise<string> => {
+    try {
+      const deck = decks.find(d => d.id === deckId);
+      if (!deck) {
+        throw new Error('Deck não encontrado');
+      }
+
+      const exportData = {
+        deck,
+        exportedAt: new Date().toISOString(),
+        version: '1.0.0',
+      };
+
+      return JSON.stringify(exportData, null, 2);
+    } catch (error) {
+      console.error('Erro ao exportar deck:', error);
+      throw error;
+    }
+  };
+
+  const importDeck = async (deckData: string): Promise<void> => {
+    try {
+      const parsed = JSON.parse(deckData);
+
+      // Validar estrutura
+      if (!parsed.deck || !parsed.version) {
+        throw new Error('Arquivo inválido - estrutura não reconhecida');
+      }
+
+      const importedDeck: Deck = parsed.deck;
+
+      // Verificar se deck já existe pelo título
+      const existingDeck = decks.find(d => d.title === importedDeck.title);
+      if (existingDeck) {
+        throw new Error(`Já existe um deck com o nome "${importedDeck.title}"`);
+      }
+
+      // Gerar novos IDs para evitar conflitos
+      const newDeckId = generateId();
+      const newDeck: Deck = {
+        ...importedDeck,
+        id: newDeckId,
+        flashcards: importedDeck.flashcards.map(card => ({
+          ...card,
+          id: generateId(),
+          deckId: newDeckId,
+        })),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      // Atualizar stats do deck importado
+      const updatedDeck = updateDeckStats(newDeck);
+
+      const updatedDecks = [...decks, updatedDeck];
+      await saveDecksToStorage(updatedDecks);
+
+      // Registrar no Timeline
+      await addTimelineActivity({
+        type: 'flashcard_review',
+        title: `Deck importado: ${newDeck.title}`,
+        description: `${newDeck.flashcards.length} flashcards importados`,
+        metadata: {
+          deckId: newDeck.id,
+          deckTitle: newDeck.title,
+        },
+      });
+    } catch (error) {
+      console.error('Erro ao importar deck:', error);
+      throw error;
+    }
+  };
+
+  // ==========================================
   // PROVIDER VALUE
   // ==========================================
 
@@ -406,6 +487,8 @@ export const FlashcardsProvider: React.FC<FlashcardsProviderProps> = ({ children
     deleteFlashcard,
     reviewFlashcard,
     refreshDecks,
+    exportDeck,
+    importDeck,
     createDeckFromSteps,
   };
 

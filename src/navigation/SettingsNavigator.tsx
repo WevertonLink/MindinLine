@@ -5,6 +5,9 @@ import { colors, typography } from '../theme/globalStyles';
 // Screens
 import SettingsScreen from '../screens/Settings/SettingsScreen';
 import FocusModeSettingsScreen from '../screens/Settings/FocusModeSettingsScreen';
+import TasksSettingsScreen from '../screens/Settings/TasksSettingsScreen';
+import FlashcardsSettingsScreen from '../screens/Settings/FlashcardsSettingsScreen';
+import FlowKeeperSettingsScreen from '../screens/Settings/FlowKeeperSettingsScreen';
 
 const Stack = createStackNavigator();
 
@@ -34,7 +37,21 @@ const SettingsNavigator = () => {
         component={FocusModeSettingsScreen}
         options={{ title: 'Focus Mode' }}
       />
-      {/* Outras telas de configuração virão aqui */}
+      <Stack.Screen
+        name="TasksSettings"
+        component={TasksSettingsScreen}
+        options={{ title: 'Tarefas' }}
+      />
+      <Stack.Screen
+        name="FlashcardsSettings"
+        component={FlashcardsSettingsScreen}
+        options={{ title: 'Flashcards' }}
+      />
+      <Stack.Screen
+        name="FlowKeeperSettings"
+        component={FlowKeeperSettingsScreen}
+        options={{ title: 'FlowKeeper' }}
+      />
     </Stack.Navigator>
   );
 };

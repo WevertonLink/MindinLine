@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 // Navigators & Screens
+import HomeScreen from '../screens/Home/HomeScreen';
 import FlowKeeperNavigator from './FlowKeeperNavigator';
 import FlashcardsNavigator from './FlashcardsNavigator';
 import TasksNavigator from './TasksNavigator';
@@ -51,7 +52,20 @@ const BottomTabNavigator = () => {
         },
       }}
     >
-      {/* Flashcards Tab - PRIMEIRA (principal) */}
+      {/* Home Tab - Dashboard Principal */}
+      <Tab.Screen
+        name="HomeTab"
+        component={HomeScreen}
+        options={{
+          title: 'MindinLine',
+          tabBarLabel: 'Início',
+          tabBarIcon: ({ color, size }) => (
+            <Icon name="home-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      {/* Flashcards Tab */}
       <Tab.Screen
         name="FlashcardsTab"
         component={FlashcardsNavigator}

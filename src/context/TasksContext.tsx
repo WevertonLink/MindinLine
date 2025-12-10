@@ -57,6 +57,11 @@ interface TasksContextData {
   cancelFocusSession: () => Promise<void>;
   updateFocusModeConfig: (config: Partial<FocusModeConfig>) => void;
 
+  // Time Tracking (Timer Convencional)
+  startTaskTimer: (taskId: string) => Promise<void>;
+  pauseTaskTimer: (taskId: string) => Promise<void>;
+  stopTaskTimer: (taskId: string) => Promise<void>;
+
   // Utilitários
   refreshTasks: () => Promise<void>;
 }
@@ -523,6 +528,146 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
   };
 
   // ==========================================
+  // TIME TRACKING (TIMER CONVENCIONAL)
+  // ==========================================
+
+  /**
+   * Inicia o timer de uma task
+   */
+  const startTaskTimer = async (taskId: string): Promise<void> => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) {
+      logger.warn('Task não encontrada:', taskId);
+      return;
+    }
+
+    const now = new Date().toISOString();
+
+    const updatedTask: Task = {
+      ...task,
+      timeTracking: {
+        isRunning: true,
+        startedAt: now,
+        pausedAt: undefined,
+        totalSeconds: task.timeTracking?.totalSeconds || 0,
+        sessions: task.timeTracking?.sessions || [],
+      },
+      updatedAt: now,
+    };
+
+    const updatedTasks = tasks.map(t => (t.id === taskId ? updatedTask : t));
+    setTasks(updatedTasks);
+    await saveTasksToStorage(updatedTasks);
+
+    logger.info('Timer iniciado para task:', taskId);
+  };
+
+  /**
+   * Pausa o timer de uma task
+   */
+  const pauseTaskTimer = async (taskId: string): Promise<void> => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || !task.timeTracking?.isRunning) {
+      logger.warn('Timer não está rodando ou task não encontrada:', taskId);
+      return;
+    }
+
+    const now = new Date().toISOString();
+    const startedAt = task.timeTracking.startedAt!;
+
+    // Calcular segundos desde que iniciou
+    const elapsed = Math.floor(
+      (new Date(now).getTime() - new Date(startedAt).getTime()) / 1000
+    );
+
+    const updatedTask: Task = {
+      ...task,
+      timeTracking: {
+        ...task.timeTracking,
+        isRunning: false,
+        pausedAt: now,
+        totalSeconds: task.timeTracking.totalSeconds + elapsed,
+      },
+      updatedAt: now,
+    };
+
+    const updatedTasks = tasks.map(t => (t.id === taskId ? updatedTask : t));
+    setTasks(updatedTasks);
+    await saveTasksToStorage(updatedTasks);
+
+    logger.info('Timer pausado:', {
+      taskId,
+      elapsed,
+      total: updatedTask.timeTracking?.totalSeconds,
+    });
+  };
+
+  /**
+   * Para o timer e finaliza a sessão (salva no histórico)
+   */
+  const stopTaskTimer = async (taskId: string): Promise<void> => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || !task.timeTracking) {
+      logger.warn('Task ou timeTracking não encontrado:', taskId);
+      return;
+    }
+
+    const now = new Date().toISOString();
+    let totalSeconds = task.timeTracking.totalSeconds;
+
+    // Se estava rodando, calcular tempo final
+    if (task.timeTracking.isRunning && task.timeTracking.startedAt) {
+      const elapsed = Math.floor(
+        (new Date(now).getTime() - new Date(task.timeTracking.startedAt).getTime()) / 1000
+      );
+      totalSeconds += elapsed;
+    }
+
+    // Criar sessão para histórico
+    const session = {
+      startedAt: task.timeTracking.sessions.length > 0
+        ? task.timeTracking.sessions[0].startedAt
+        : task.timeTracking.startedAt || now,
+      endedAt: now,
+      duration: totalSeconds,
+    };
+
+    const updatedTask: Task = {
+      ...task,
+      timeTracking: {
+        isRunning: false,
+        startedAt: undefined,
+        pausedAt: undefined,
+        totalSeconds: 0, // Reset para próxima vez
+        sessions: [...(task.timeTracking.sessions || []), session],
+      },
+      updatedAt: now,
+    };
+
+    const updatedTasks = tasks.map(t => (t.id === taskId ? updatedTask : t));
+    setTasks(updatedTasks);
+    await saveTasksToStorage(updatedTasks);
+
+    // Adicionar atividade na timeline
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const timeStr = hours > 0 ? `${hours}h ${minutes}min` : `${minutes}min`;
+
+    await addTimelineActivity({
+      type: 'focus_session',
+      title: `Timer finalizado: ${task.title}`,
+      description: `Tempo gasto: ${timeStr}`,
+      metadata: {
+        taskId,
+        taskTitle: task.title,
+        duration: totalSeconds,
+      },
+    });
+
+    logger.info('Timer finalizado:', { taskId, totalSeconds });
+  };
+
+  // ==========================================
   // UTILITÁRIOS
   // ==========================================
 
@@ -554,6 +699,9 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
     completeFocusSession,
     cancelFocusSession,
     updateFocusModeConfig,
+    startTaskTimer,
+    pauseTaskTimer,
+    stopTaskTimer,
     refreshTasks,
   };
 

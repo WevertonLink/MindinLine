@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -40,11 +40,54 @@ const TaskDetailScreen = ({ route, navigation }: any) => {
     toggleSubtask,
     deleteSubtask,
     startFocusSession,
+    startTaskTimer,
+    pauseTaskTimer,
+    stopTaskTimer,
   } = useTasks();
 
   const task = getTaskById(taskId);
   const [showAddSubtask, setShowAddSubtask] = useState(false);
   const [subtaskTitle, setSubtaskTitle] = useState('');
+  const [currentTime, setCurrentTime] = useState(Date.now()); // Para atualizar timer em tempo real
+
+  // Atualizar timer a cada segundo se estiver rodando
+  useEffect(() => {
+    if (!task?.timeTracking?.isRunning) return;
+
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [task?.timeTracking?.isRunning]);
+
+  // Helper para calcular segundos atuais do timer
+  const getCurrentSeconds = (): number => {
+    if (!task?.timeTracking) return 0;
+
+    let total = task.timeTracking.totalSeconds;
+
+    if (task.timeTracking.isRunning && task.timeTracking.startedAt) {
+      const elapsed = Math.floor(
+        (Date.now() - new Date(task.timeTracking.startedAt).getTime()) / 1000
+      );
+      total += elapsed;
+    }
+
+    return total;
+  };
+
+  // Helper para formatar duração
+  const formatDuration = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+  };
 
   if (!task) {
     return (
@@ -176,6 +219,101 @@ const TaskDetailScreen = ({ route, navigation }: any) => {
               </Text>
             </Pressable>
           </View>
+        </View>
+
+        {/* Timer Section */}
+        <View style={[globalStyles.glassCard, styles.timerSection]}>
+          <View style={styles.timerHeader}>
+            <Icon name="timer-outline" size={24} color={colors.accent.primary} />
+            <Text style={styles.sectionTitle}>Timer</Text>
+          </View>
+
+          {/* Display do tempo atual */}
+          {task.timeTracking && (
+            <View style={styles.timerDisplay}>
+              <Text style={styles.timerText}>{formatDuration(getCurrentSeconds())}</Text>
+              {task.estimatedMinutes && (
+                <Text style={styles.estimateText}>
+                  Estimado: {task.estimatedMinutes}min
+                </Text>
+              )}
+            </View>
+          )}
+
+          {/* Controles do timer */}
+          <View style={styles.timerControls}>
+            {!task.timeTracking?.isRunning ? (
+              <Pressable
+                style={[globalStyles.buttonPrimary, styles.timerButton]}
+                onPress={() => startTaskTimer(taskId)}
+              >
+                <Icon name="play-circle-outline" size={24} color={colors.text.primary} />
+                <Text style={[globalStyles.buttonText, { marginLeft: spacing.xs }]}>
+                  Iniciar
+                </Text>
+              </Pressable>
+            ) : (
+              <View style={styles.activeTimerRow}>
+                <Pressable
+                  style={[globalStyles.buttonSecondary, styles.timerButton]}
+                  onPress={() => pauseTaskTimer(taskId)}
+                >
+                  <Icon name="pause-circle-outline" size={24} color={colors.text.primary} />
+                  <Text style={[globalStyles.buttonText, { marginLeft: spacing.xs }]}>
+                    Pausar
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  style={[styles.stopButton, styles.timerButton]}
+                  onPress={() => {
+                    Alert.alert(
+                      'Parar Timer',
+                      'Deseja parar e salvar esta sessão no histórico?',
+                      [
+                        { text: 'Cancelar', style: 'cancel' },
+                        {
+                          text: 'Parar',
+                          style: 'destructive',
+                          onPress: () => stopTaskTimer(taskId),
+                        },
+                      ]
+                    );
+                  }}
+                >
+                  <Icon name="stop-circle-outline" size={24} color="#FFF" />
+                  <Text style={[globalStyles.buttonText, { marginLeft: spacing.xs, color: '#FFF' }]}>
+                    Parar
+                  </Text>
+                </Pressable>
+              </View>
+            )}
+          </View>
+
+          {/* Histórico de sessões */}
+          {task.timeTracking?.sessions && task.timeTracking.sessions.length > 0 && (
+            <View style={styles.sessionsHistory}>
+              <Text style={styles.historyTitle}>Sessões Anteriores</Text>
+              {task.timeTracking.sessions.slice(-3).reverse().map((session, index) => {
+                const date = new Date(session.endedAt);
+                const dateStr = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+
+                return (
+                  <View key={index} style={styles.sessionRow}>
+                    <Text style={styles.sessionDate}>{dateStr}</Text>
+                    <Text style={styles.sessionDuration}>
+                      {formatDuration(session.duration)}
+                    </Text>
+                  </View>
+                );
+              })}
+              {task.timeTracking.sessions.length > 3 && (
+                <Text style={styles.moreSessionsText}>
+                  +{task.timeTracking.sessions.length - 3} sessões anteriores
+                </Text>
+              )}
+            </View>
+          )}
         </View>
 
         {/* Subtasks */}
@@ -465,6 +603,84 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
+  },
+  // Timer styles
+  timerSection: {
+    marginTop: spacing.lg,
+  },
+  timerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  timerDisplay: {
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.md,
+  },
+  timerText: {
+    fontSize: 48,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.accent.primary,
+    fontVariant: ['tabular-nums'],
+  },
+  estimateText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+    marginTop: spacing.xs,
+  },
+  timerControls: {
+    gap: spacing.md,
+  },
+  activeTimerRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  timerButton: {
+    flex: 1,
+  },
+  stopButton: {
+    backgroundColor: colors.status.error,
+    borderColor: colors.status.error,
+  },
+  sessionsHistory: {
+    marginTop: spacing.lg,
+    paddingTop: spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: colors.glass.border,
+  },
+  historyTitle: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.secondary,
+    marginBottom: spacing.sm,
+  },
+  sessionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  sessionDate: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.tertiary,
+  },
+  sessionDuration: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.primary,
+  },
+  moreSessionsText: {
+    fontSize: typography.fontSize.xs,
+    color: colors.text.tertiary,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    fontStyle: 'italic',
   },
 });
 

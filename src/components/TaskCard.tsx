@@ -41,6 +41,28 @@ const TaskCardComponent: React.FC<TaskCardProps> = ({
   const isTaskOverdue = isOverdue(task);
   const isTaskDueToday = isDueToday(task);
 
+  // Calcular tempo do timer se estiver rodando
+  const getTimerDisplay = (): string | null => {
+    if (!task.timeTracking?.isRunning || !task.timeTracking.startedAt) {
+      return null;
+    }
+
+    const elapsed = Math.floor(
+      (Date.now() - new Date(task.timeTracking.startedAt).getTime()) / 1000
+    );
+    const totalSeconds = task.timeTracking.totalSeconds + elapsed;
+
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}min`;
+    }
+    return `${minutes}min`;
+  };
+
+  const timerDisplay = getTimerDisplay();
+
   return (
     <Pressable
       style={({ pressed }) => [
@@ -133,6 +155,16 @@ const TaskCardComponent: React.FC<TaskCardProps> = ({
               <Icon name="time-outline" size={14} color={colors.text.tertiary} />
               <Text style={styles.metaText}>
                 {task.estimatedMinutes}min
+              </Text>
+            </View>
+          )}
+
+          {/* Timer ativo */}
+          {timerDisplay && (
+            <View style={styles.timerBadge}>
+              <Icon name="timer" size={14} color={colors.status.success} />
+              <Text style={[styles.metaText, { color: colors.status.success, fontWeight: typography.fontWeight.semibold }]}>
+                {timerDisplay}
               </Text>
             </View>
           )}
@@ -270,6 +302,15 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.xs,
     color: colors.text.tertiary,
   },
+  timerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+    borderRadius: borderRadius.sm,
+    paddingVertical: 2,
+    paddingHorizontal: spacing.sm,
+  },
   progressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -337,6 +378,15 @@ const TaskCard = memo(TaskCardComponent, (prevProps, nextProps) => {
     prevProps.task.dueDate !== nextProps.task.dueDate ||
     prevProps.task.description !== nextProps.task.description ||
     prevProps.task.estimatedMinutes !== nextProps.task.estimatedMinutes
+  ) {
+    return false;
+  }
+
+  // Comparar timeTracking (para atualizar quando timer começar/parar)
+  if (
+    prevProps.task.timeTracking?.isRunning !== nextProps.task.timeTracking?.isRunning ||
+    prevProps.task.timeTracking?.startedAt !== nextProps.task.timeTracking?.startedAt ||
+    prevProps.task.timeTracking?.totalSeconds !== nextProps.task.timeTracking?.totalSeconds
   ) {
     return false;
   }

@@ -63,6 +63,26 @@ export interface FocusSession {
 }
 
 /**
+ * Sessão de time tracking
+ */
+export interface TimeTrackingSession {
+  startedAt: string;
+  endedAt: string;
+  duration: number; // segundos
+}
+
+/**
+ * Time tracking para tarefas
+ */
+export interface TimeTracking {
+  isRunning: boolean;
+  startedAt?: string; // ISO timestamp de quando iniciou
+  pausedAt?: string; // ISO timestamp da última pausa
+  totalSeconds: number; // tempo total acumulado em segundos
+  sessions: TimeTrackingSession[]; // histórico de sessões
+}
+
+/**
  * Tarefa completa
  */
 export interface Task {
@@ -91,6 +111,9 @@ export interface Task {
   estimatedMinutes?: number; // Tempo estimado
   actualMinutes?: number; // Tempo real gasto
   focusSessions: FocusSession[]; // Sessões de foco (Pomodoro)
+
+  // Time tracking convencional (novo)
+  timeTracking?: TimeTracking; // Timer convencional para tasks
 
   // Recorrência
   isRecurring: boolean;

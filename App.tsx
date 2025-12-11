@@ -12,7 +12,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AppNavigator from './src/navigation/AppNavigator';
 import { colors } from './src/theme/globalStyles';
-import { FlowKeeperProvider } from './src/context/FlowKeeperContext';
+import { TrilhasProvider } from './src/context/TrilhasContext';
 import { FlashcardsProvider } from './src/context/FlashcardsContext';
 import { TasksProvider } from './src/context/TasksContext';
 import { TimelineProvider } from './src/context/TimelineContext';
@@ -25,7 +25,7 @@ function App() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
           <SettingsProvider>
-            <FlowKeeperProvider>
+            <TrilhasProvider>
               <FlashcardsProvider>
                 <TasksProvider>
                   <TimelineProvider>
@@ -40,7 +40,7 @@ function App() {
                   </TimelineProvider>
                 </TasksProvider>
               </FlashcardsProvider>
-            </FlowKeeperProvider>
+            </TrilhasProvider>
           </SettingsProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>

@@ -1,16 +1,16 @@
 // ==========================================
-// 🎯 TIPOS E INTERFACES: FLOWKEEPER
+// 🎯 TIPOS E INTERFACES: TRILHAS DE APRENDIZADO
 // ==========================================
 
 /**
- * Status do fluxo
+ * Status da trilha
  */
-export type FlowStatus = 'active' | 'paused' | 'completed';
+export type StatusTrilha = 'active' | 'paused' | 'completed';
 
 /**
- * Categoria do fluxo (expansível)
+ * Categoria da trilha (expansível)
  */
-export type FlowCategory =
+export type CategoriaTrilha =
   | 'programming'
   | 'language'
   | 'science'
@@ -44,9 +44,9 @@ export interface Material {
 }
 
 /**
- * Etapa do fluxo de aprendizado
+ * Etapa da trilha de aprendizado
  */
-export interface FlowStep {
+export interface Etapa {
   id: string;
   title: string;
   description?: string;
@@ -59,15 +59,15 @@ export interface FlowStep {
 }
 
 /**
- * Fluxo de aprendizado completo
+ * Trilha de aprendizado completa
  */
-export interface Flow {
+export interface Trilha {
   id: string;
   title: string;
   description?: string;
-  category?: FlowCategory;
-  status: FlowStatus;
-  steps: FlowStep[];
+  category?: CategoriaTrilha;
+  status: StatusTrilha;
+  steps: Etapa[];
   progress: number; // 0-100 (calculado automaticamente)
   linkedDeckId?: string; // ID do deck de flashcards gerado desta trilha
   createdAt: string;
@@ -78,30 +78,30 @@ export interface Flow {
 }
 
 /**
- * Input para criar novo fluxo
+ * Input para criar nova trilha
  */
-export interface CreateFlowInput {
+export interface CriarTrilhaInput {
   title: string;
   description?: string;
-  category?: FlowCategory;
+  category?: CategoriaTrilha;
   tags?: string[];
 }
 
 /**
- * Input para atualizar fluxo
+ * Input para atualizar trilha
  */
-export interface UpdateFlowInput {
+export interface AtualizarTrilhaInput {
   title?: string;
   description?: string;
-  category?: FlowCategory;
-  status?: FlowStatus;
+  category?: CategoriaTrilha;
+  status?: StatusTrilha;
   tags?: string[];
 }
 
 /**
  * Input para criar nova etapa
  */
-export interface CreateStepInput {
+export interface CriarEtapaInput {
   title: string;
   description?: string;
   estimatedTime?: number;
@@ -110,7 +110,7 @@ export interface CreateStepInput {
 /**
  * Input para criar novo material
  */
-export interface CreateMaterialInput {
+export interface CriarMaterialInput {
   title: string;
   type: MaterialType;
   url?: string;
@@ -118,30 +118,30 @@ export interface CreateMaterialInput {
 }
 
 /**
- * Estatísticas do FlowKeeper
+ * Estatísticas das Trilhas
  */
-export interface FlowKeeperStats {
-  totalFlows: number;
-  activeFlows: number;
-  completedFlows: number;
+export interface EstatisticasTrilhas {
+  totalTrilhas: number;
+  activeTrilhas: number;
+  completedTrilhas: number;
   totalSteps: number;
   completedSteps: number;
   averageProgress: number;
 }
 
 /**
- * Filtros para listar fluxos
+ * Filtros para listar trilhas
  */
-export interface FlowFilters {
-  status?: FlowStatus;
-  category?: FlowCategory;
+export interface TrilhaFilters {
+  status?: StatusTrilha;
+  category?: CategoriaTrilha;
   searchQuery?: string;
 }
 
 /**
  * Opções de ordenação
  */
-export type FlowSortBy =
+export type TrilhaSortBy =
   | 'createdAt'
   | 'updatedAt'
   | 'title'

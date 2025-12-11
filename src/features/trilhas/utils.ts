@@ -1,7 +1,7 @@
-import { Flow, FlowStep, FlowKeeperStats } from './types';
+import { Trilha, Etapa, EstatisticasTrilhas } from './types';
 
 // ==========================================
-// 🔧 UTILITÁRIOS: FLOWKEEPER
+// 🔧 UTILITÁRIOS: TRILHAS DE APRENDIZADO
 // ==========================================
 
 /**
@@ -12,9 +12,9 @@ export const generateId = (): string => {
 };
 
 /**
- * Calcular progresso do fluxo (0-100)
+ * Calcular progresso da trilha (0-100)
  */
-export const calculateFlowProgress = (steps: FlowStep[]): number => {
+export const calculateFlowProgress = (steps: Etapa[]): number => {
   if (steps.length === 0) return 0;
 
   const completedSteps = steps.filter(step => step.completed).length;
@@ -22,32 +22,32 @@ export const calculateFlowProgress = (steps: FlowStep[]): number => {
 };
 
 /**
- * Verificar se fluxo está completo
+ * Verificar se trilha está completa
  */
-export const isFlowCompleted = (flow: Flow): boolean => {
-  return flow.steps.length > 0 && flow.steps.every(step => step.completed);
+export const isTrilhaCompleted = (trilha: Trilha): boolean => {
+  return trilha.steps.length > 0 && trilha.steps.every(step => step.completed);
 };
 
 /**
  * Obter próxima etapa não concluída
  */
-export const getNextIncompleteStep = (flow: Flow): FlowStep | null => {
-  return flow.steps.find(step => !step.completed) || null;
+export const getNextIncompleteStep = (trilha: Trilha): Etapa | null => {
+  return trilha.steps.find(step => !step.completed) || null;
 };
 
 /**
- * Calcular tempo total estimado do fluxo (em minutos)
+ * Calcular tempo total estimado da trilha (em minutos)
  */
-export const calculateTotalEstimatedTime = (steps: FlowStep[]): number => {
+export const calculateTotalEstimatedTime = (steps: Etapa[]): number => {
   return steps.reduce((total, step) => {
     return total + (step.estimatedTime || 0);
   }, 0);
 };
 
 /**
- * Calcular tempo restante do fluxo (em minutos)
+ * Calcular tempo restante da trilha (em minutos)
  */
-export const calculateRemainingTime = (steps: FlowStep[]): number => {
+export const calculateRemainingTime = (steps: Etapa[]): number => {
   return steps
     .filter(step => !step.completed)
     .reduce((total, step) => {
@@ -76,14 +76,14 @@ export const formatTime = (minutes: number): string => {
 /**
  * Ordenar etapas por ordem
  */
-export const sortStepsByOrder = (steps: FlowStep[]): FlowStep[] => {
+export const sortStepsByOrder = (steps: Etapa[]): Etapa[] => {
   return [...steps].sort((a, b) => a.order - b.order);
 };
 
 /**
  * Reordenar etapas após adição/remoção
  */
-export const reorderSteps = (steps: FlowStep[]): FlowStep[] => {
+export const reorderSteps = (steps: Etapa[]): Etapa[] => {
   return steps.map((step, index) => ({
     ...step,
     order: index,
@@ -93,28 +93,28 @@ export const reorderSteps = (steps: FlowStep[]): FlowStep[] => {
 /**
  * Calcular estatísticas gerais
  */
-export const calculateStats = (flows: Flow[]): FlowKeeperStats => {
-  const totalFlows = flows.length;
-  const activeFlows = flows.filter(f => f.status === 'active').length;
-  const completedFlows = flows.filter(f => f.status === 'completed').length;
+export const calculateStats = (trilhas: Trilha[]): EstatisticasTrilhas => {
+  const totalTrilhas = trilhas.length;
+  const activeTrilhas = trilhas.filter(t => t.status === 'active').length;
+  const completedTrilhas = trilhas.filter(t => t.status === 'completed').length;
 
-  const totalSteps = flows.reduce((sum, flow) => sum + flow.steps.length, 0);
-  const completedSteps = flows.reduce(
-    (sum, flow) => sum + flow.steps.filter(s => s.completed).length,
+  const totalSteps = trilhas.reduce((sum, trilha) => sum + trilha.steps.length, 0);
+  const completedSteps = trilhas.reduce(
+    (sum, trilha) => sum + trilha.steps.filter(s => s.completed).length,
     0
   );
 
   const averageProgress =
-    totalFlows > 0
+    totalTrilhas > 0
       ? Math.round(
-          flows.reduce((sum, flow) => sum + flow.progress, 0) / totalFlows
+          trilhas.reduce((sum, trilha) => sum + trilha.progress, 0) / totalTrilhas
         )
       : 0;
 
   return {
-    totalFlows,
-    activeFlows,
-    completedFlows,
+    totalTrilhas,
+    activeTrilhas,
+    completedTrilhas,
     totalSteps,
     completedSteps,
     averageProgress,
@@ -122,21 +122,21 @@ export const calculateStats = (flows: Flow[]): FlowKeeperStats => {
 };
 
 /**
- * Filtrar fluxos por query de busca
+ * Filtrar trilhas por query de busca
  */
-export const filterFlowsBySearch = (
-  flows: Flow[],
+export const filterTrilhasBySearch = (
+  trilhas: Trilha[],
   query: string
-): Flow[] => {
+): Trilha[] => {
   const lowerQuery = query.toLowerCase().trim();
 
-  if (!lowerQuery) return flows;
+  if (!lowerQuery) return trilhas;
 
-  return flows.filter(
-    flow =>
-      flow.title.toLowerCase().includes(lowerQuery) ||
-      flow.description?.toLowerCase().includes(lowerQuery) ||
-      flow.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
+  return trilhas.filter(
+    trilha =>
+      trilha.title.toLowerCase().includes(lowerQuery) ||
+      trilha.description?.toLowerCase().includes(lowerQuery) ||
+      trilha.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
   );
 };
 

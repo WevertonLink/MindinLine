@@ -3,15 +3,15 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { colors, typography } from '../theme/globalStyles';
 
 // Screens
-import FlowKeeperHomeScreen from '../screens/FlowKeeper/FlowKeeperHomeScreen';
-import CreateFlowScreen from '../screens/FlowKeeper/CreateFlowScreen';
-import FlowDetailScreen from '../screens/FlowKeeper/FlowDetailScreen';
-import StepDetailScreen from '../screens/FlowKeeper/StepDetailScreen';
-import EditStepScreen from '../screens/FlowKeeper/EditStepScreen';
+import TrilhasHomeScreen from '../screens/Trilhas/TrilhasHomeScreen';
+import CreateTrilhaScreen from '../screens/Trilhas/CreateTrilhaScreen';
+import TrilhaDetailScreen from '../screens/Trilhas/TrilhaDetailScreen';
+import StepDetailScreen from '../screens/Trilhas/StepDetailScreen';
+import EditStepScreen from '../screens/Trilhas/EditStepScreen';
 
 const Stack = createStackNavigator();
 
-const FlowKeeperNavigator = () => {
+const TrilhasNavigator = () => {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -28,25 +28,25 @@ const FlowKeeperNavigator = () => {
       }}
     >
       <Stack.Screen
-        name="FlowKeeperHome"
-        component={FlowKeeperHomeScreen}
+        name="TrilhasHome"
+        component={TrilhasHomeScreen}
         options={{ headerShown: false }}
       />
 
       <Stack.Screen
-        name="CreateFlow"
-        component={CreateFlowScreen}
+        name="CreateTrilha"
+        component={CreateTrilhaScreen}
         options={{
-          title: 'Criar Fluxo',
+          title: 'Criar Trilha',
           presentation: 'modal',
         }}
       />
 
       <Stack.Screen
-        name="FlowDetail"
-        component={FlowDetailScreen}
+        name="TrilhaDetail"
+        component={TrilhaDetailScreen}
         options={{
-          title: 'Detalhes do Fluxo',
+          title: 'Detalhes da Trilha',
         }}
       />
 
@@ -70,4 +70,4 @@ const FlowKeeperNavigator = () => {
   );
 };
 
-export default FlowKeeperNavigator;
+export default TrilhasNavigator;

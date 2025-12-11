@@ -6,7 +6,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 // Navigators & Screens
 import HomeScreen from '../screens/Home/HomeScreen';
-import FlowKeeperNavigator from './FlowKeeperNavigator';
+import TrilhasNavigator from './TrilhasNavigator';
 import FlashcardsNavigator from './FlashcardsNavigator';
 import TasksNavigator from './TasksNavigator';
 import SettingsNavigator from './SettingsNavigator';
@@ -80,8 +80,8 @@ const BottomTabNavigator = () => {
 
       {/* Trilhas de Estudo Tab */}
       <Tab.Screen
-        name="FlowKeeperTab"
-        component={FlowKeeperNavigator}
+        name="TrilhasTab"
+        component={TrilhasNavigator}
         options={{
           headerShown: false,
           tabBarLabel: 'Trilhas',

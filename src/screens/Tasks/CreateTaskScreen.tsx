@@ -444,6 +444,72 @@ const styles = StyleSheet.create({
   buttonDisabled: {
     opacity: 0.5,
   },
+  recurrenceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  recurrenceConfig: {
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.glass.border,
+  },
+  recurrenceRow: {
+    marginBottom: spacing.md,
+  },
+  recurrenceLabel: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
+  },
+  recurrenceTypeButtons: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  recurrenceTypeButton: {
+    flex: 1,
+    backgroundColor: colors.glass.background,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.glass.border,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    alignItems: 'center',
+  },
+  recurrenceTypeButtonSelected: {
+    backgroundColor: colors.accent.primary,
+    borderColor: colors.accent.primary,
+  },
+  recurrenceTypeText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+  },
+  recurrenceTypeTextSelected: {
+    color: colors.text.primary,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  intervalContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  intervalInput: {
+    backgroundColor: colors.glass.background,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.glass.border,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    fontSize: typography.fontSize.base,
+    color: colors.text.primary,
+    width: 60,
+    textAlign: 'center',
+  },
+  intervalUnit: {
+    fontSize: typography.fontSize.sm,
+    color: colors.text.secondary,
+  },
 });
 
 export default CreateTaskScreen;

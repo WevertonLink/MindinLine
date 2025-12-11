@@ -177,7 +177,7 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
       });
 
       // 3. Ler da cópia local
-      const fileContent = await RNFS.readFile(localCopy.uri, 'utf8');
+      const fileContent = await RNFS.readFile(localCopy.localUri, 'utf8');
 
       // 4. Validar estrutura antes de importar
       const data = JSON.parse(fileContent);

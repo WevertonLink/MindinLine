@@ -309,7 +309,6 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
           description: `Próxima ocorrência de "${task.title}"`,
           metadata: {
             taskId: nextOccurrence.id,
-            originalTaskId: task.id,
           },
         });
 

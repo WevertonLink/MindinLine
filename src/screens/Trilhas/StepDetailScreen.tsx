@@ -13,8 +13,8 @@ import {
   Linking,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useFlowKeeper } from '../../context/FlowKeeperContext';
-import { Material, MaterialType } from '../../features/flowkeeper/types';
+import { useTrilhas } from '../../context/TrilhasContext';
+import { Material, MaterialType } from '../../features/trilhas/types';
 import EmptyState from '../../components/EmptyState';
 import {
   globalStyles,
@@ -23,7 +23,7 @@ import {
   borderRadius,
   typography,
 } from '../../theme/globalStyles';
-import { formatTime } from '../../features/flowkeeper/utils';
+import { formatTime } from '../../features/trilhas/utils';
 
 const MATERIAL_TYPES: { value: MaterialType; label: string; icon: string }[] = [
   { value: 'video', label: 'Vídeo', icon: 'play-circle-outline' },
@@ -36,16 +36,16 @@ const MATERIAL_TYPES: { value: MaterialType; label: string; icon: string }[] = [
 ];
 
 const StepDetailScreen = ({ route, navigation }: any) => {
-  const { flowId, stepId } = route.params;
+  const { trilhaId, stepId } = route.params;
   const {
-    getFlowById,
-    toggleStepCompletion,
-    addMaterial,
-    deleteMaterial,
-  } = useFlowKeeper();
+    obterTrilhaPorId,
+    toggleEtapaConclusao,
+    adicionarMaterial,
+    deletarMaterial,
+  } = useTrilhas();
 
-  const flow = getFlowById(flowId);
-  const step = flow?.steps.find(s => s.id === stepId);
+  const trilha = obterTrilhaPorId(trilhaId);
+  const step = trilha?.steps.find(s => s.id === stepId);
 
   const [showAddMaterialModal, setShowAddMaterialModal] = useState(false);
   const [materialTitle, setMaterialTitle] = useState('');
@@ -55,7 +55,7 @@ const StepDetailScreen = ({ route, navigation }: any) => {
   const [isAdding, setIsAdding] = useState(false);
 
   // Se step não encontrado
-  if (!step || !flow) {
+  if (!step || !trilha) {
     return (
       <View style={[globalStyles.container, globalStyles.centered]}>
         <EmptyState
@@ -70,7 +70,7 @@ const StepDetailScreen = ({ route, navigation }: any) => {
   // Handler para toggle completion
   const handleToggle = async () => {
     try {
-      await toggleStepCompletion(flowId, stepId);
+      await toggleEtapaConclusao(trilhaId, stepId);
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível atualizar a etapa');
     }
@@ -86,7 +86,7 @@ const StepDetailScreen = ({ route, navigation }: any) => {
     try {
       setIsAdding(true);
 
-      await addMaterial(flowId, stepId, {
+      await adicionarMaterial(trilhaId, stepId, {
         title: materialTitle.trim(),
         type: materialType,
         url: materialUrl.trim() || undefined,
@@ -118,7 +118,7 @@ const StepDetailScreen = ({ route, navigation }: any) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteMaterial(flowId, stepId, material.id);
+              await deletarMaterial(trilhaId, stepId, material.id);
             } catch (error) {
               Alert.alert('Erro', 'Não foi possível deletar o material');
             }
@@ -200,7 +200,7 @@ const StepDetailScreen = ({ route, navigation }: any) => {
           <Pressable
             style={styles.editButton}
             onPress={() =>
-              navigation.navigate('EditStep', { flowId, stepId })
+              navigation.navigate('EditStep', { trilhaId, stepId })
             }
           >
             <Icon name="create-outline" size={18} color={colors.accent.primary} />

@@ -100,8 +100,8 @@ export interface Task {
   completedAt?: string;
 
   // Relacionamentos
-  flowId?: string; // ID do fluxo vinculado (FlowKeeper)
-  stepId?: string; // ID da etapa vinculada (FlowKeeper)
+  flowId?: string; // ID da trilha vinculada (mantido para compatibilidade)
+  stepId?: string; // ID da etapa vinculada (mantido para compatibilidade)
   parentTaskId?: string; // ID da tarefa pai (para subtarefas)
 
   // Subtarefas

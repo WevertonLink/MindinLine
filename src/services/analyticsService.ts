@@ -216,8 +216,8 @@ export class AnalyticsService {
     });
   }
 
-  logFlowCompleted(category: string, durationDays: number): void {
-    this.logEvent('flow_completed', {
+  logTrilhaConcluida(category: string, durationDays: number): void {
+    this.logEvent('trilha_concluida', {
       category,
       duration_days: durationDays,
     });

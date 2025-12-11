@@ -63,8 +63,8 @@ export const TimelineProvider: React.FC<TimelineProviderProps> = ({ children }) 
   const [activities, setActivities] = useState<Activity[]>([]);
   const [stats, setStats] = useState<TimelineStats>({
     totalActivities: 0,
-    flowStudies: 0,
-    flowsCompleted: 0,
+    trilhaEstudos: 0,
+    trilhasConcluidas: 0,
     flashcardReviews: 0,
     decksCompleted: 0,
     tasksCompleted: 0,

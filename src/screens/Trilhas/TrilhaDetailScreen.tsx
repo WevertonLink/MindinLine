@@ -179,8 +179,8 @@ const TrilhaDetailScreen = ({ route, navigation }: any) => {
         {/* Header da trilha */}
         <View style={globalStyles.glassCard}>
           <View style={styles.flowHeader}>
-            <View style={styles.flowTitleContainer}>
-              <Text style={styles.flowTitle}>{trilha.title}</Text>
+            <View style={styles.trilhaTitleContainer}>
+              <Text style={styles.trilhaTitle}>{trilha.title}</Text>
               <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
                 <Text style={styles.statusText}>{translateStatus(trilha.status)}</Text>
               </View>
@@ -404,12 +404,12 @@ const styles = StyleSheet.create({
   flowHeader: {
     marginBottom: spacing.md,
   },
-  flowTitleContainer: {
+  trilhaTitleContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
   },
-  flowTitle: {
+  trilhaTitle: {
     flex: 1,
     fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,

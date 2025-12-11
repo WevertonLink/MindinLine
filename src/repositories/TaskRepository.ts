@@ -64,14 +64,22 @@ export class TaskRepository extends BaseRepository<Task> {
   }
 
   /**
-   * Buscar tasks vinculadas a um flow
+   * Buscar tasks vinculadas a uma trilha
+   * @deprecated Use getByTrilhaId em vez disso (mantido para compatibilidade)
    */
   async getByFlowId(flowId: string): Promise<Task[]> {
     return this.filter(t => t.flowId === flowId);
   }
 
   /**
-   * Buscar tasks vinculadas a um step de flow
+   * Buscar tasks vinculadas a uma trilha
+   */
+  async getByTrilhaId(trilhaId: string): Promise<Task[]> {
+    return this.filter(t => t.flowId === trilhaId);
+  }
+
+  /**
+   * Buscar tasks vinculadas a uma etapa de trilha
    */
   async getByStepId(stepId: string): Promise<Task[]> {
     return this.filter(t => t.stepId === stepId);

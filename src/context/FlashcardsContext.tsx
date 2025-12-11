@@ -59,8 +59,8 @@ interface FlashcardsContextData {
 
   // Integração com Trilhas
   createDeckFromSteps: (
-    flowId: string,
-    flowTitle: string,
+    trilhaId: string,
+    trilhaTitulo: string,
     steps: Array<{ id: string; title: string; description?: string }>
   ) => Promise<Deck>;
 }
@@ -334,15 +334,15 @@ export const FlashcardsProvider: React.FC<FlashcardsProviderProps> = ({ children
   // ==========================================
 
   const createDeckFromSteps = async (
-    flowId: string,
-    flowTitle: string,
+    trilhaId: string,
+    trilhaTitulo: string,
     steps: Array<{ id: string; title: string; description?: string }>
   ): Promise<Deck> => {
     // Criar novo deck
     const newDeck: Deck = {
       id: generateId(),
-      title: `📚 ${flowTitle}`,
-      description: `Flashcards gerados da trilha: ${flowTitle}`,
+      title: `📚 ${trilhaTitulo}`,
+      description: `Flashcards gerados da trilha: ${trilhaTitulo}`,
       category: 'general',
       status: 'active',
       flashcards: [],
@@ -353,7 +353,7 @@ export const FlashcardsProvider: React.FC<FlashcardsProviderProps> = ({ children
       masteredCards: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      tags: ['trilha', flowId],
+      tags: ['trilha', trilhaId],
     };
 
     // Criar flashcards para cada step

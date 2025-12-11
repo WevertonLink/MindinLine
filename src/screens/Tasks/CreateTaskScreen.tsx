@@ -9,10 +9,11 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Switch,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTasks } from '../../context/TasksContext';
-import { TaskPriority, TaskCategory } from '../../features/tasks/types';
+import { TaskPriority, TaskCategory, RecurrenceType } from '../../features/tasks/types';
 import { validateTitle, translatePriority, translateCategory } from '../../features/tasks/utils';
 import {
   globalStyles,
@@ -36,9 +37,19 @@ const CreateTaskScreen = ({ navigation }: any) => {
   const [estimatedMinutes, setEstimatedMinutes] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
+  // Recurrence states
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>('daily');
+  const [recurrenceInterval, setRecurrenceInterval] = useState('1');
+
   const handleCreate = async () => {
     if (!validateTitle(title)) {
       Alert.alert('Erro', 'O título deve ter no mínimo 3 caracteres');
+      return;
+    }
+
+    if (isRecurring && !dueDate) {
+      Alert.alert('Erro', 'Tarefas recorrentes precisam de uma data de vencimento');
       return;
     }
 
@@ -52,9 +63,14 @@ const CreateTaskScreen = ({ navigation }: any) => {
         category: selectedCategory,
         dueDate: dueDate || undefined,
         estimatedMinutes: estimatedMinutes ? parseInt(estimatedMinutes) : undefined,
+        isRecurring,
+        recurrence: isRecurring ? {
+          type: recurrenceType,
+          interval: parseInt(recurrenceInterval) || 1,
+        } : undefined,
       });
 
-      Alert.alert('Sucesso', 'Tarefa criada com sucesso!');
+      Alert.alert('Sucesso', isRecurring ? 'Tarefa recorrente criada com sucesso!' : 'Tarefa criada com sucesso!');
       navigation.goBack();
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível criar a tarefa');
@@ -202,6 +218,70 @@ const CreateTaskScreen = ({ navigation }: any) => {
             maxLength={4}
           />
           <Text style={styles.helperText}>Em minutos</Text>
+        </View>
+
+        {/* Recorrência */}
+        <View style={styles.section}>
+          <View style={styles.recurrenceHeader}>
+            <Icon name="repeat-outline" size={20} color={colors.accent.primary} />
+            <Text style={styles.label}>Tarefa Recorrente</Text>
+            <Switch
+              value={isRecurring}
+              onValueChange={setIsRecurring}
+              trackColor={{ false: colors.glass.border, true: colors.accent.primary }}
+              thumbColor={colors.text.primary}
+            />
+          </View>
+
+          {isRecurring && (
+            <View style={styles.recurrenceConfig}>
+              {/* Tipo de recorrência */}
+              <View style={styles.recurrenceRow}>
+                <Text style={styles.recurrenceLabel}>Repetir:</Text>
+                <View style={styles.recurrenceTypeButtons}>
+                  {(['daily', 'weekly', 'monthly'] as RecurrenceType[]).map(type => (
+                    <Pressable
+                      key={type}
+                      style={[
+                        styles.recurrenceTypeButton,
+                        recurrenceType === type && styles.recurrenceTypeButtonSelected,
+                      ]}
+                      onPress={() => setRecurrenceType(type)}
+                    >
+                      <Text style={[
+                        styles.recurrenceTypeText,
+                        recurrenceType === type && styles.recurrenceTypeTextSelected,
+                      ]}>
+                        {type === 'daily' ? 'Diário' : type === 'weekly' ? 'Semanal' : 'Mensal'}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+
+              {/* Intervalo */}
+              <View style={styles.recurrenceRow}>
+                <Text style={styles.recurrenceLabel}>A cada:</Text>
+                <View style={styles.intervalContainer}>
+                  <TextInput
+                    style={styles.intervalInput}
+                    value={recurrenceInterval}
+                    onChangeText={setRecurrenceInterval}
+                    keyboardType="numeric"
+                    maxLength={2}
+                  />
+                  <Text style={styles.intervalUnit}>
+                    {recurrenceType === 'daily' ? 'dia(s)' :
+                     recurrenceType === 'weekly' ? 'semana(s)' : 'mês(es)'}
+                  </Text>
+                </View>
+              </View>
+
+              <Text style={styles.helperText}>
+                Nova tarefa será criada automaticamente ao concluir esta
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Info box */}

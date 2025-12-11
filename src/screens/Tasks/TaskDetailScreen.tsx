@@ -316,6 +316,43 @@ const TaskDetailScreen = ({ route, navigation }: any) => {
           )}
         </View>
 
+        {/* Recorrência */}
+        {task.isRecurring && task.recurrence && (
+          <View style={globalStyles.glassCard}>
+            <View style={styles.timerHeader}>
+              <Icon name="repeat-outline" size={24} color={colors.accent.primary} />
+              <Text style={styles.sectionTitle}>Recorrência</Text>
+            </View>
+
+            <View style={styles.recurrenceInfo}>
+              <View style={styles.recurrenceRow}>
+                <Icon name="calendar" size={20} color={colors.text.secondary} />
+                <Text style={styles.recurrenceText}>
+                  {task.recurrence.type === 'daily' && `A cada ${task.recurrence.interval} dia(s)`}
+                  {task.recurrence.type === 'weekly' && `A cada ${task.recurrence.interval} semana(s)`}
+                  {task.recurrence.type === 'monthly' && `A cada ${task.recurrence.interval} mês(meses)`}
+                </Text>
+              </View>
+
+              {task.recurrence.endDate && (
+                <View style={styles.recurrenceRow}>
+                  <Icon name="flag" size={20} color={colors.text.secondary} />
+                  <Text style={styles.recurrenceText}>
+                    Até {new Date(task.recurrence.endDate).toLocaleDateString('pt-BR')}
+                  </Text>
+                </View>
+              )}
+
+              <View style={styles.recurrenceBadge}>
+                <Icon name="sync" size={16} color={colors.status.success} />
+                <Text style={styles.recurrenceBadgeText}>
+                  Nova tarefa será criada automaticamente ao concluir
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
+
         {/* Subtasks */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -681,6 +718,34 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: spacing.sm,
     fontStyle: 'italic',
+  },
+  // Recurrence styles
+  recurrenceInfo: {
+    gap: spacing.md,
+  },
+  recurrenceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  recurrenceText: {
+    fontSize: typography.fontSize.base,
+    color: colors.text.primary,
+    flex: 1,
+  },
+  recurrenceBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+    borderRadius: borderRadius.md,
+    padding: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  recurrenceBadgeText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.status.success,
+    flex: 1,
   },
 });
 

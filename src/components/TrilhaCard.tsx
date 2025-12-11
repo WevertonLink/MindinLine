@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Flow } from '../features/flowkeeper/types';
+import { Trilha } from '../features/trilhas/types';
 import {
   globalStyles,
   colors,
@@ -14,20 +14,20 @@ import {
   translateCategory,
   translateStatus,
   getStatusColor,
-} from '../features/flowkeeper/utils';
+} from '../features/trilhas/utils';
 
 // ==========================================
-// 🎴 FLOW CARD COMPONENT
+// 🎴 TRILHA CARD COMPONENT
 // ==========================================
 
-interface FlowCardProps {
-  flow: Flow;
+interface TrilhaCardProps {
+  trilha: Trilha;
   onPress: () => void;
   onLongPress?: () => void;
 }
 
-const FlowCardComponent: React.FC<FlowCardProps> = ({ flow, onPress, onLongPress }) => {
-  const statusColor = getStatusColor(flow.status);
+const TrilhaCardComponent: React.FC<TrilhaCardProps> = ({ trilha, onPress, onLongPress }) => {
+  const statusColor = getStatusColor(trilha.status);
 
   return (
     <Pressable
@@ -39,12 +39,12 @@ const FlowCardComponent: React.FC<FlowCardProps> = ({ flow, onPress, onLongPress
       <View style={styles.header}>
         <View style={styles.titleContainer}>
           <Text style={styles.title} numberOfLines={2}>
-            {flow.title}
+            {trilha.title}
           </Text>
-          {flow.category && (
+          {trilha.category && (
             <View style={styles.categoryBadge}>
               <Text style={styles.categoryText}>
-                {translateCategory(flow.category)}
+                {translateCategory(trilha.category)}
               </Text>
             </View>
           )}
@@ -52,14 +52,14 @@ const FlowCardComponent: React.FC<FlowCardProps> = ({ flow, onPress, onLongPress
 
         {/* Status badge */}
         <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-          <Text style={styles.statusText}>{translateStatus(flow.status)}</Text>
+          <Text style={styles.statusText}>{translateStatus(trilha.status)}</Text>
         </View>
       </View>
 
       {/* Description */}
-      {flow.description && (
+      {trilha.description && (
         <Text style={styles.description} numberOfLines={2}>
-          {flow.description}
+          {trilha.description}
         </Text>
       )}
 
@@ -69,11 +69,11 @@ const FlowCardComponent: React.FC<FlowCardProps> = ({ flow, onPress, onLongPress
           <View
             style={[
               styles.progressFill,
-              { width: `${flow.progress}%`, backgroundColor: statusColor },
+              { width: `${trilha.progress}%`, backgroundColor: statusColor },
             ]}
           />
         </View>
-        <Text style={styles.progressText}>{flow.progress}%</Text>
+        <Text style={styles.progressText}>{trilha.progress}%</Text>
       </View>
 
       {/* Footer */}
@@ -82,7 +82,7 @@ const FlowCardComponent: React.FC<FlowCardProps> = ({ flow, onPress, onLongPress
         <View style={styles.footerItem}>
           <Icon name="list-outline" size={16} color={colors.text.tertiary} />
           <Text style={styles.footerText}>
-            {flow.steps.length} etapa{flow.steps.length !== 1 ? 's' : ''}
+            {trilha.steps.length} etapa{trilha.steps.length !== 1 ? 's' : ''}
           </Text>
         </View>
 
@@ -90,7 +90,7 @@ const FlowCardComponent: React.FC<FlowCardProps> = ({ flow, onPress, onLongPress
         <View style={styles.footerItem}>
           <Icon name="time-outline" size={16} color={colors.text.tertiary} />
           <Text style={styles.footerText}>
-            {formatRelativeDate(flow.updatedAt)}
+            {formatRelativeDate(trilha.updatedAt)}
           </Text>
         </View>
       </View>
@@ -196,23 +196,23 @@ const styles = StyleSheet.create({
 });
 
 /**
- * FlowCard memoizado com comparação customizada
- * Evita re-renders desnecessários quando apenas outros flows mudam
+ * TrilhaCard memoizado com comparação customizada
+ * Evita re-renders desnecessários quando apenas outras trilhas mudam
  */
-const FlowCard = memo(FlowCardComponent, (prevProps, nextProps) => {
+const TrilhaCard = memo(TrilhaCardComponent, (prevProps, nextProps) => {
   // Retorna true se props são iguais (não deve re-renderizar)
   // Retorna false se props mudaram (deve re-renderizar)
 
-  // Comparar campos principais do flow
+  // Comparar campos principais da trilha
   if (
-    prevProps.flow.id !== nextProps.flow.id ||
-    prevProps.flow.title !== nextProps.flow.title ||
-    prevProps.flow.description !== nextProps.flow.description ||
-    prevProps.flow.category !== nextProps.flow.category ||
-    prevProps.flow.status !== nextProps.flow.status ||
-    prevProps.flow.progress !== nextProps.flow.progress ||
-    prevProps.flow.steps.length !== nextProps.flow.steps.length ||
-    prevProps.flow.updatedAt !== nextProps.flow.updatedAt
+    prevProps.trilha.id !== nextProps.trilha.id ||
+    prevProps.trilha.title !== nextProps.trilha.title ||
+    prevProps.trilha.description !== nextProps.trilha.description ||
+    prevProps.trilha.category !== nextProps.trilha.category ||
+    prevProps.trilha.status !== nextProps.trilha.status ||
+    prevProps.trilha.progress !== nextProps.trilha.progress ||
+    prevProps.trilha.steps.length !== nextProps.trilha.steps.length ||
+    prevProps.trilha.updatedAt !== nextProps.trilha.updatedAt
   ) {
     return false;
   }
@@ -221,4 +221,4 @@ const FlowCard = memo(FlowCardComponent, (prevProps, nextProps) => {
   return true;
 });
 
-export default FlowCard;
+export default TrilhaCard;

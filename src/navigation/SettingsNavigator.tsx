@@ -7,7 +7,7 @@ import SettingsScreen from '../screens/Settings/SettingsScreen';
 import FocusModeSettingsScreen from '../screens/Settings/FocusModeSettingsScreen';
 import TasksSettingsScreen from '../screens/Settings/TasksSettingsScreen';
 import FlashcardsSettingsScreen from '../screens/Settings/FlashcardsSettingsScreen';
-import FlowKeeperSettingsScreen from '../screens/Settings/FlowKeeperSettingsScreen';
+import TrilhasSettingsScreen from '../screens/Settings/TrilhasSettingsScreen';
 
 const Stack = createStackNavigator();
 
@@ -48,9 +48,9 @@ const SettingsNavigator = () => {
         options={{ title: 'Flashcards' }}
       />
       <Stack.Screen
-        name="FlowKeeperSettings"
-        component={FlowKeeperSettingsScreen}
-        options={{ title: 'FlowKeeper' }}
+        name="TrilhasSettings"
+        component={TrilhasSettingsScreen}
+        options={{ title: 'Trilhas de Aprendizado' }}
       />
     </Stack.Navigator>
   );

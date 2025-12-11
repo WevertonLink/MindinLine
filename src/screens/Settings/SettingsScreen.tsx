@@ -329,11 +329,11 @@ const SettingsScreen = ({ navigation }: any) => {
 
           <Pressable
             style={styles.settingRow}
-            onPress={() => navigation.navigate('FlowKeeperSettings')}
+            onPress={() => navigation.navigate('TrilhasSettings')}
           >
             <View style={styles.settingLeft}>
               <Icon name="library-outline" size={20} color={colors.status.warning} />
-              <Text style={styles.settingLabel}>FlowKeeper</Text>
+              <Text style={styles.settingLabel}>Trilhas de Aprendizado</Text>
             </View>
             <Icon name="chevron-forward" size={20} color={colors.text.tertiary} />
           </Pressable>

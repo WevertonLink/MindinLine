@@ -6,8 +6,8 @@
  * Tipos de atividades registradas no Timeline
  */
 export type ActivityType =
-  | 'flow_study'         // Estudou um material do FlowKeeper
-  | 'flow_completed'     // Completou um flow
+  | 'trilha_estudo'      // Estudou um material de uma Trilha
+  | 'trilha_concluida'   // Completou uma trilha
   | 'flashcard_review'   // Revisou flashcards
   | 'flashcard_deck_completed' // Completou revisão de um deck
   | 'task_completed'     // Completou uma tarefa
@@ -27,11 +27,11 @@ export interface Activity {
 
   // Metadata específico por tipo
   metadata?: {
-    // FlowKeeper
-    flowId?: string;
-    flowTitle?: string;
-    stepId?: string;
-    stepTitle?: string;
+    // Trilhas
+    trilhaId?: string;
+    trilhaTitulo?: string;
+    etapaId?: string;
+    etapaTitulo?: string;
     materialType?: 'video' | 'article' | 'book' | 'pdf' | 'link' | 'note';
 
     // Flashcards
@@ -79,8 +79,8 @@ export interface TimelineStats {
   totalActivities: number;
 
   // Por tipo
-  flowStudies: number;
-  flowsCompleted: number;
+  trilhaEstudos: number;
+  trilhasConcluidas: number;
   flashcardReviews: number;
   decksCompleted: number;
   tasksCompleted: number;

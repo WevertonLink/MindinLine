@@ -11,7 +11,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useTasks } from '../../context/TasksContext';
 import { useFlashcards } from '../../context/FlashcardsContext';
 import { useTimeline } from '../../context/TimelineContext';
-import { useFlowKeeper } from '../../context/FlowKeeperContext';
+import { useTrilhas } from '../../context/TrilhasContext';
 import {
   globalStyles,
   colors,
@@ -27,7 +27,7 @@ const HomeScreen = ({ navigation }: any) => {
   const { tasks, stats: taskStats } = useTasks();
   const { decks, stats: flashcardStats } = useFlashcards();
   const { stats: timelineStats, activities } = useTimeline();
-  const { flows } = useFlowKeeper();
+  const { trilhas } = useTrilhas();
 
   const streak = timelineStats.currentStreak;
 
@@ -104,7 +104,7 @@ const HomeScreen = ({ navigation }: any) => {
 
           <View style={[styles.statCard, { borderColor: colors.status.warning }]}>
             <Icon name="library-outline" size={24} color={colors.status.warning} />
-            <Text style={styles.statNumber}>{flows.length}</Text>
+            <Text style={styles.statNumber}>{trilhas.length}</Text>
             <Text style={styles.statLabel}>trilhas</Text>
           </View>
         </View>
@@ -135,8 +135,8 @@ const HomeScreen = ({ navigation }: any) => {
 
             <Pressable
               style={styles.quickAction}
-              onPress={() => navigation.navigate('FlowKeeperTab', {
-                screen: 'CreateFlow',
+              onPress={() => navigation.navigate('TrilhasTab', {
+                screen: 'CreateTrilha',
               })}
             >
               <Icon name="map" size={32} color={colors.status.warning} />
@@ -238,10 +238,10 @@ const HomeScreen = ({ navigation }: any) => {
           </View>
         </Pressable>
 
-        {/* FlowKeeper Module */}
+        {/* Trilhas Module */}
         <Pressable
           style={globalStyles.glassCard}
-          onPress={() => navigation.navigate('FlowKeeperTab')}
+          onPress={() => navigation.navigate('TrilhasTab')}
         >
           <View style={styles.moduleHeader}>
             <View style={styles.moduleIcon}>
@@ -256,18 +256,18 @@ const HomeScreen = ({ navigation }: any) => {
 
           <View style={styles.moduleStats}>
             <View style={styles.moduleStat}>
-              <Text style={styles.moduleStatNumber}>{flows.length}</Text>
+              <Text style={styles.moduleStatNumber}>{trilhas.length}</Text>
               <Text style={styles.moduleStatLabel}>trilhas</Text>
             </View>
             <View style={styles.moduleStat}>
               <Text style={styles.moduleStatNumber}>
-                {flows.filter(f => f.status === 'active').length}
+                {trilhas.filter(t => t.status === 'active').length}
               </Text>
               <Text style={styles.moduleStatLabel}>ativas</Text>
             </View>
             <View style={styles.moduleStat}>
               <Text style={[styles.moduleStatNumber, { color: colors.status.success }]}>
-                {flows.filter(f => f.status === 'completed').length}
+                {trilhas.filter(t => t.status === 'completed').length}
               </Text>
               <Text style={styles.moduleStatLabel}>completas</Text>
             </View>

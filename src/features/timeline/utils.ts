@@ -22,8 +22,8 @@ export const generateId = (): string => {
  */
 export const getActivityIcon = (type: ActivityType): string => {
   const icons: Record<ActivityType, string> = {
-    flow_study: 'book-outline',
-    flow_completed: 'trophy-outline',
+    trilha_estudo: 'book-outline',
+    trilha_concluida: 'trophy-outline',
     flashcard_review: 'layers-outline',
     flashcard_deck_completed: 'checkmark-done-circle-outline',
     task_completed: 'checkmark-circle-outline',
@@ -40,8 +40,8 @@ export const getActivityIcon = (type: ActivityType): string => {
  */
 export const getActivityColor = (type: ActivityType): string => {
   const colors: Record<ActivityType, string> = {
-    flow_study: '#3b82f6',       // blue
-    flow_completed: '#f59e0b',   // amber
+    trilha_estudo: '#3b82f6',       // blue
+    trilha_concluida: '#f59e0b',   // amber
     flashcard_review: '#8b5cf6', // violet
     flashcard_deck_completed: '#10b981', // green
     task_completed: '#10b981',   // green
@@ -58,8 +58,8 @@ export const getActivityColor = (type: ActivityType): string => {
  */
 export const translateActivityType = (type: ActivityType): string => {
   const translations: Record<ActivityType, string> = {
-    flow_study: 'Estudo',
-    flow_completed: 'Flow Completo',
+    trilha_estudo: 'Estudo',
+    trilha_concluida: 'Trilha Concluída',
     flashcard_review: 'Revisão',
     flashcard_deck_completed: 'Deck Completo',
     task_completed: 'Tarefa Concluída',
@@ -140,7 +140,7 @@ export const groupActivitiesByDay = (activities: Activity[]): DailyActivity[] =>
         .filter(a => a.type === 'focus_session')
         .reduce((sum, a) => sum + (a.metadata?.duration || 0), 0) / 60,
       studyTime: dayActivities
-        .filter(a => a.type === 'flow_study' || a.type === 'flashcard_review')
+        .filter(a => a.type === 'trilha_estudo' || a.type === 'flashcard_review')
         .reduce((sum, a) => sum + (a.metadata?.duration || 20), 0) / 60, // estimate 20min per study
     }))
     .sort((a, b) => b.date.localeCompare(a.date));
@@ -276,8 +276,8 @@ export const calculateStats = (activities: Activity[]): TimelineStats => {
   const streak = calculateStreak(activities);
 
   // Total por tipo
-  const flowStudies = activities.filter(a => a.type === 'flow_study').length;
-  const flowsCompleted = activities.filter(a => a.type === 'flow_completed').length;
+  const trilhaEstudos = activities.filter(a => a.type === 'trilha_estudo').length;
+  const trilhasConcluidas = activities.filter(a => a.type === 'trilha_concluida').length;
   const flashcardReviews = activities.filter(a => a.type === 'flashcard_review').length;
   const decksCompleted = activities.filter(a => a.type === 'flashcard_deck_completed').length;
   const tasksCompleted = activities.filter(a => a.type === 'task_completed').length;
@@ -295,7 +295,7 @@ export const calculateStats = (activities: Activity[]): TimelineStats => {
   // Tempo total de estudo (estimate)
   const totalStudyTime = Math.round(
     activities
-      .filter(a => a.type === 'flow_study' || a.type === 'flashcard_review')
+      .filter(a => a.type === 'trilha_estudo' || a.type === 'flashcard_review')
       .reduce((sum, a) => sum + (a.metadata?.duration || 20), 0) / 60
   );
 
@@ -332,8 +332,8 @@ export const calculateStats = (activities: Activity[]): TimelineStats => {
 
   return {
     totalActivities: activities.length,
-    flowStudies,
-    flowsCompleted,
+    trilhaEstudos,
+    trilhasConcluidas,
     flashcardReviews,
     decksCompleted,
     tasksCompleted,
@@ -366,7 +366,7 @@ export const searchActivities = (activities: Activity[], query: string): Activit
     activity =>
       activity.title.toLowerCase().includes(lowercaseQuery) ||
       activity.description?.toLowerCase().includes(lowercaseQuery) ||
-      activity.metadata?.flowTitle?.toLowerCase().includes(lowercaseQuery) ||
+      activity.metadata?.trilhaTitulo?.toLowerCase().includes(lowercaseQuery) ||
       activity.metadata?.deckTitle?.toLowerCase().includes(lowercaseQuery) ||
       activity.metadata?.taskTitle?.toLowerCase().includes(lowercaseQuery)
   );

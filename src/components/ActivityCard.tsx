@@ -33,12 +33,12 @@ const ActivityCardComponent: React.FC<ActivityCardProps> = ({
 
     const metaItems: string[] = [];
 
-    // FlowKeeper metadata
-    if (metadata.flowTitle) {
-      metaItems.push(metadata.flowTitle);
+    // Trilhas metadata
+    if (metadata.trilhaTitulo) {
+      metaItems.push(metadata.trilhaTitulo);
     }
-    if (metadata.stepTitle) {
-      metaItems.push(metadata.stepTitle);
+    if (metadata.etapaTitulo) {
+      metaItems.push(metadata.etapaTitulo);
     }
     if (metadata.materialType) {
       const types: Record<string, string> = {

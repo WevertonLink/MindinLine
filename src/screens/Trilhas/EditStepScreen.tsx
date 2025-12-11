@@ -11,7 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useFlowKeeper } from '../../context/FlowKeeperContext';
+import { useTrilhas } from '../../context/TrilhasContext';
 import {
   globalStyles,
   colors,
@@ -21,11 +21,11 @@ import {
 } from '../../theme/globalStyles';
 
 const EditStepScreen = ({ route, navigation }: any) => {
-  const { flowId, stepId } = route.params;
-  const { getFlowById, updateStep, deleteStep } = useFlowKeeper();
+  const { trilhaId, stepId } = route.params;
+  const { obterTrilhaPorId, atualizarEtapa, deletarEtapa } = useTrilhas();
 
-  const flow = getFlowById(flowId);
-  const step = flow?.steps.find(s => s.id === stepId);
+  const trilha = obterTrilhaPorId(trilhaId);
+  const step = trilha?.steps.find(s => s.id === stepId);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -42,7 +42,7 @@ const EditStepScreen = ({ route, navigation }: any) => {
   }, [step]);
 
   // Se step não encontrado
-  if (!step || !flow) {
+  if (!step || !trilha) {
     return (
       <View style={[globalStyles.container, globalStyles.centered]}>
         <Icon name="alert-circle-outline" size={64} color={colors.text.tertiary} />
@@ -61,7 +61,7 @@ const EditStepScreen = ({ route, navigation }: any) => {
     try {
       setIsSaving(true);
 
-      await updateStep(flowId, stepId, {
+      await atualizarEtapa(trilhaId, stepId, {
         title: title.trim(),
         description: description.trim() || undefined,
         estimatedTime: estimatedTime ? parseInt(estimatedTime) : undefined,
@@ -88,7 +88,7 @@ const EditStepScreen = ({ route, navigation }: any) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteStep(flowId, stepId);
+              await deletarEtapa(trilhaId, stepId);
               Alert.alert('Sucesso', 'Etapa deletada com sucesso!');
               navigation.goBack();
             } catch (error) {

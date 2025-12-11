@@ -17,6 +17,7 @@ import {
   generateId,
   calculateStats,
 } from '../features/tasks/utils';
+import { createNextOccurrence } from '../features/tasks/recurrence';
 import { STORAGE_KEYS, loadDataVersioned, saveDataVersioned } from '../services/storage';
 import { addTimelineActivity } from '../services/timelineService';
 import { useSettings } from './SettingsContext';
@@ -283,7 +284,7 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
 
     const newStatus: TaskStatus = task.status === 'completed' ? 'todo' : 'completed';
 
-    const updatedTasks = tasks.map(t => {
+    let updatedTasks = tasks.map(t => {
       if (t.id === taskId) {
         return {
           ...t,
@@ -294,6 +295,34 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
       }
       return t;
     });
+
+    // Criar próxima ocorrência se task recorrente foi completada
+    if (newStatus === 'completed' && task.isRecurring && task.recurrence) {
+      try {
+        const nextOccurrence = createNextOccurrence(task);
+        updatedTasks = [...updatedTasks, nextOccurrence];
+
+        // Registrar criação da próxima ocorrência no timeline
+        await addTimelineActivity({
+          type: 'task_created',
+          title: `Tarefa recorrente criada: ${nextOccurrence.title}`,
+          description: `Próxima ocorrência de "${task.title}"`,
+          metadata: {
+            taskId: nextOccurrence.id,
+            originalTaskId: task.id,
+          },
+        });
+
+        logger.info('Próxima ocorrência criada:', {
+          original: task.id,
+          next: nextOccurrence.id,
+          dueDate: nextOccurrence.dueDate,
+        });
+      } catch (error: any) {
+        logger.warn('Não foi possível criar próxima ocorrência:', error.message);
+        // Continuar mesmo se falhar (ex: endDate atingido)
+      }
+    }
 
     await saveTasksToStorage(updatedTasks);
 

@@ -54,7 +54,7 @@ const DEFAULT_SETTINGS: Settings = {
     enableRecurringTasks: true,
     defaultReminderMinutes: 60,
   },
-  flowKeeper: {
+  trilhas: {
     autoPlayNextStep: false,
     markMaterialAsCompletedOnView: false,
     defaultStepDuration: 30,
@@ -133,7 +133,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
           focusMode: { ...DEFAULT_SETTINGS.focusMode, ...parsed.focusMode },
           flashcards: { ...DEFAULT_SETTINGS.flashcards, ...parsed.flashcards },
           tasks: { ...DEFAULT_SETTINGS.tasks, ...parsed.tasks },
-          flowKeeper: { ...DEFAULT_SETTINGS.flowKeeper, ...parsed.flowKeeper },
+          trilhas: { ...DEFAULT_SETTINGS.trilhas, ...(parsed.trilhas || parsed.flowKeeper) },
           timeline: { ...DEFAULT_SETTINGS.timeline, ...parsed.timeline },
         });
       }
@@ -185,7 +185,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
       focusMode: input.focusMode ? { ...settings.focusMode, ...input.focusMode } : settings.focusMode,
       flashcards: input.flashcards ? { ...settings.flashcards, ...input.flashcards } : settings.flashcards,
       tasks: input.tasks ? { ...settings.tasks, ...input.tasks } : settings.tasks,
-      flowKeeper: input.flowKeeper ? { ...settings.flowKeeper, ...input.flowKeeper } : settings.flowKeeper,
+      trilhas: input.trilhas ? { ...settings.trilhas, ...input.trilhas } : settings.trilhas,
       timeline: input.timeline ? { ...settings.timeline, ...input.timeline } : settings.timeline,
       lastUpdated: new Date().toISOString(),
     };
@@ -329,7 +329,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
       const stats: UsageStats = {
         totalDaysUsed,
         lastOpenedAt: new Date().toISOString(),
-        totalFlows: flows.length,
+        totalTrilhas: flows.length,
         totalDecks: flashcards.decks?.length || 0,
         totalTasks: tasks.length,
         totalActivities: activities.length,

@@ -63,9 +63,9 @@ export interface TasksSettings {
 }
 
 /**
- * Configurações de FlowKeeper
+ * Configurações de Trilhas de Aprendizado
  */
-export interface FlowKeeperSettings {
+export interface TrilhasSettings {
   autoPlayNextStep: boolean;
   markMaterialAsCompletedOnView: boolean;
   defaultStepDuration: number; // duração estimada padrão em minutos
@@ -90,7 +90,7 @@ export interface Settings {
   focusMode: FocusModeSettings;
   flashcards: FlashcardsSettings;
   tasks: TasksSettings;
-  flowKeeper: FlowKeeperSettings;
+  trilhas: TrilhasSettings;
   timeline: TimelineSettings;
 
   // Metadata
@@ -106,7 +106,7 @@ export interface UpdateSettingsInput {
   focusMode?: Partial<FocusModeSettings>;
   flashcards?: Partial<FlashcardsSettings>;
   tasks?: Partial<TasksSettings>;
-  flowKeeper?: Partial<FlowKeeperSettings>;
+  trilhas?: Partial<TrilhasSettings>;
   timeline?: Partial<TimelineSettings>;
 }
 
@@ -129,7 +129,7 @@ export interface ExportData {
 export interface UsageStats {
   totalDaysUsed: number;
   lastOpenedAt: string;
-  totalFlows: number;
+  totalTrilhas: number;
   totalDecks: number;
   totalTasks: number;
   totalActivities: number;

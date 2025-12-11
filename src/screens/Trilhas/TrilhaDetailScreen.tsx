@@ -12,7 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useFlowKeeper } from '../../context/FlowKeeperContext';
+import { useTrilhas } from '../../context/TrilhasContext';
 import { useFlashcards } from '../../context/FlashcardsContext';
 import StepItem from '../../components/StepItem';
 import EmptyState from '../../components/EmptyState';
@@ -30,14 +30,14 @@ import {
   calculateTotalEstimatedTime,
   calculateRemainingTime,
   formatTime,
-} from '../../features/flowkeeper/utils';
+} from '../../features/trilhas/utils';
 
-const FlowDetailScreen = ({ route, navigation }: any) => {
-  const { flowId } = route.params;
-  const { getFlowById, addStep, toggleStepCompletion, deleteStep, linkDeck } = useFlowKeeper();
+const TrilhaDetailScreen = ({ route, navigation }: any) => {
+  const { trilhaId } = route.params;
+  const { obterTrilhaPorId, adicionarEtapa, toggleEtapaConclusao, deletarEtapa, vincularDeck } = useTrilhas();
   const { createDeckFromSteps, getDeckById } = useFlashcards();
 
-  const flow = getFlowById(flowId);
+  const trilha = obterTrilhaPorId(trilhaId);
 
   const [showAddStepModal, setShowAddStepModal] = useState(false);
   const [newStepTitle, setNewStepTitle] = useState('');
@@ -46,24 +46,24 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
   const [isAddingStep, setIsAddingStep] = useState(false);
   const [isCreatingDeck, setIsCreatingDeck] = useState(false);
 
-  // Se fluxo não encontrado
-  if (!flow) {
+  // Se trilha não encontrada
+  if (!trilha) {
     return (
       <View style={[globalStyles.container, globalStyles.centered]}>
         <EmptyState
           icon="alert-circle-outline"
-          title="Fluxo não encontrado"
-          message="Este fluxo pode ter sido removido"
+          title="Trilha não encontrada"
+          message="Esta trilha pode ter sido removida"
         />
       </View>
     );
   }
 
-  const statusColor = getStatusColor(flow.status);
-  const totalTime = calculateTotalEstimatedTime(flow.steps);
-  const remainingTime = calculateRemainingTime(flow.steps);
+  const statusColor = getStatusColor(trilha.status);
+  const totalTime = calculateTotalEstimatedTime(trilha.steps);
+  const remainingTime = calculateRemainingTime(trilha.steps);
 
-  // Handler para adicionar step
+  // Handler para adicionar etapa
   const handleAddStep = async () => {
     if (newStepTitle.trim().length < 3) {
       Alert.alert('Erro', 'O título deve ter no mínimo 3 caracteres');
@@ -73,7 +73,7 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
     try {
       setIsAddingStep(true);
 
-      await addStep(flowId, {
+      await adicionarEtapa(trilhaId, {
         title: newStepTitle.trim(),
         description: newStepDescription.trim() || undefined,
         estimatedTime: newStepTime ? parseInt(newStepTime) : undefined,
@@ -94,13 +94,13 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
   // Handler para toggle completion
   const handleToggleStep = async (stepId: string) => {
     try {
-      await toggleStepCompletion(flowId, stepId);
+      await toggleEtapaConclusao(trilhaId, stepId);
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível atualizar a etapa');
     }
   };
 
-  // Handler para deletar step
+  // Handler para deletar etapa
   const handleDeleteStep = (stepId: string, stepTitle: string) => {
     Alert.alert(
       'Deletar Etapa',
@@ -112,7 +112,7 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteStep(flowId, stepId);
+              await deletarEtapa(trilhaId, stepId);
             } catch (error) {
               Alert.alert('Erro', 'Não foi possível deletar a etapa');
             }
@@ -124,14 +124,14 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
 
   // Handler para criar flashcards das etapas
   const handleCreateFlashcards = async () => {
-    if (flow.steps.length === 0) {
+    if (trilha.steps.length === 0) {
       Alert.alert('Aviso', 'Adicione etapas primeiro para gerar flashcards');
       return;
     }
 
     Alert.alert(
       'Criar Flashcards',
-      `Deseja gerar ${flow.steps.length} flashcard${flow.steps.length !== 1 ? 's' : ''} desta trilha?\n\nCada etapa será transformada em um flashcard para você memorizar.`,
+      `Deseja gerar ${trilha.steps.length} flashcard${trilha.steps.length !== 1 ? 's' : ''} desta trilha?\n\nCada etapa será transformada em um flashcard para você memorizar.`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -141,17 +141,17 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
               setIsCreatingDeck(true);
 
               const deck = await createDeckFromSteps(
-                flowId,
-                flow.title,
-                flow.steps.map(s => ({
+                trilhaId,
+                trilha.title,
+                trilha.steps.map(s => ({
                   id: s.id,
                   title: s.title,
                   description: s.description,
                 }))
               );
 
-              // Salvar linkedDeckId no flow
-              await linkDeck(flowId, deck.id);
+              // Salvar linkedDeckId na trilha
+              await vincularDeck(trilhaId, deck.id);
 
               Alert.alert(
                 'Sucesso! 🎉',
@@ -176,19 +176,19 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header do fluxo */}
+        {/* Header da trilha */}
         <View style={globalStyles.glassCard}>
           <View style={styles.flowHeader}>
             <View style={styles.flowTitleContainer}>
-              <Text style={styles.flowTitle}>{flow.title}</Text>
+              <Text style={styles.flowTitle}>{trilha.title}</Text>
               <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-                <Text style={styles.statusText}>{translateStatus(flow.status)}</Text>
+                <Text style={styles.statusText}>{translateStatus(trilha.status)}</Text>
               </View>
             </View>
           </View>
 
-          {flow.description && (
-            <Text style={styles.flowDescription}>{flow.description}</Text>
+          {trilha.description && (
+            <Text style={styles.flowDescription}>{trilha.description}</Text>
           )}
 
           {/* Progress bar */}
@@ -197,11 +197,11 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
               <View
                 style={[
                   styles.progressFill,
-                  { width: `${flow.progress}%`, backgroundColor: statusColor },
+                  { width: `${trilha.progress}%`, backgroundColor: statusColor },
                 ]}
               />
             </View>
-            <Text style={styles.progressText}>{flow.progress}%</Text>
+            <Text style={styles.progressText}>{trilha.progress}%</Text>
           </View>
 
           {/* Stats */}
@@ -209,7 +209,7 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
             <View style={styles.statItem}>
               <Icon name="list-outline" size={16} color={colors.text.tertiary} />
               <Text style={styles.statText}>
-                {flow.steps.length} etapa{flow.steps.length !== 1 ? 's' : ''}
+                {trilha.steps.length} etapa{trilha.steps.length !== 1 ? 's' : ''}
               </Text>
             </View>
 
@@ -223,14 +223,14 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
             <View style={styles.statItem}>
               <Icon name="calendar-outline" size={16} color={colors.text.tertiary} />
               <Text style={styles.statText}>
-                {formatRelativeDate(flow.updatedAt)}
+                {formatRelativeDate(trilha.updatedAt)}
               </Text>
             </View>
           </View>
         </View>
 
         {/* Botão Criar Flashcards */}
-        {flow.steps.length > 0 && !flow.linkedDeckId && (
+        {trilha.steps.length > 0 && !trilha.linkedDeckId && (
           <Pressable
             style={[styles.createFlashcardsButton, isCreatingDeck && styles.buttonDisabled]}
             onPress={handleCreateFlashcards}
@@ -240,19 +240,19 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
             <Text style={styles.createFlashcardsText}>
               {isCreatingDeck
                 ? 'Gerando Flashcards...'
-                : `Gerar ${flow.steps.length} Flashcard${flow.steps.length !== 1 ? 's' : ''}`}
+                : `Gerar ${trilha.steps.length} Flashcard${trilha.steps.length !== 1 ? 's' : ''}`}
             </Text>
           </Pressable>
         )}
 
         {/* Deck Vinculado */}
-        {flow.linkedDeckId && getDeckById(flow.linkedDeckId) && (
+        {trilha.linkedDeckId && getDeckById(trilha.linkedDeckId) && (
           <Pressable
             style={styles.linkedDeckCard}
             onPress={() => {
               navigation.navigate('FlashcardsTab', {
                 screen: 'DeckDetail',
-                params: { deckId: flow.linkedDeckId },
+                params: { deckId: trilha.linkedDeckId },
               });
             }}
           >
@@ -262,7 +262,7 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
                 Deck de Flashcards Vinculado
               </Text>
               <Text style={styles.linkedDeckSubtitle}>
-                {getDeckById(flow.linkedDeckId)?.title}
+                {getDeckById(trilha.linkedDeckId)?.title}
               </Text>
             </View>
             <Icon name="chevron-forward" size={20} color={colors.text.tertiary} />
@@ -281,14 +281,14 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
             </Pressable>
           </View>
 
-          {flow.steps.length > 0 ? (
-            flow.steps.map(step => (
+          {trilha.steps.length > 0 ? (
+            trilha.steps.map(step => (
               <StepItem
                 key={step.id}
                 step={step}
                 onToggle={() => handleToggleStep(step.id)}
                 onPress={() =>
-                  navigation.navigate('StepDetail', { flowId, stepId: step.id })
+                  navigation.navigate('StepDetail', { trilhaId, stepId: step.id })
                 }
               />
             ))
@@ -296,7 +296,7 @@ const FlowDetailScreen = ({ route, navigation }: any) => {
             <EmptyState
               icon="clipboard-outline"
               title="Nenhuma etapa"
-              message="Adicione etapas para estruturar seu fluxo de aprendizado"
+              message="Adicione etapas para estruturar sua trilha de aprendizado"
             />
           )}
         </View>
@@ -593,4 +593,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FlowDetailScreen;
+export default TrilhaDetailScreen;

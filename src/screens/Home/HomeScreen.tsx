@@ -26,11 +26,15 @@ const CARD_WIDTH = (width - spacing.lg * 2 - spacing.md) / 2;
 const HomeScreen = ({ navigation }: any) => {
   const { tasks, stats: taskStats } = useTasks();
   const { decks, stats: flashcardStats } = useFlashcards();
-  const { streak, activities } = useTimeline();
+  const { stats: timelineStats, activities } = useTimeline();
   const { flows } = useFlowKeeper();
+
+  const streak = timelineStats.currentStreak;
 
   // Estatísticas rápidas
   const todayTasks = tasks.filter(t => {
+    if (!t.dueDate) return false;
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const dueDate = new Date(t.dueDate);
@@ -59,7 +63,18 @@ const HomeScreen = ({ navigation }: any) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
+        {/* Logo + Branding Header */}
+        <View style={styles.brandingHeader}>
+          <View style={styles.logoContainer}>
+            <Text style={styles.logoEmoji}>🧠</Text>
+            <Text style={styles.appName}>MindinLine</Text>
+          </View>
+          <Pressable style={styles.profileButton}>
+            <Icon name="person-circle-outline" size={32} color={colors.text.secondary} />
+          </Pressable>
+        </View>
+
+        {/* Greeting Header */}
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>{getGreeting()}! 👋</Text>
@@ -77,7 +92,7 @@ const HomeScreen = ({ navigation }: any) => {
 
           <View style={[styles.statCard, { borderColor: colors.status.success }]}>
             <Icon name="checkmark-done-outline" size={24} color={colors.status.success} />
-            <Text style={styles.statNumber}>{taskStats.completedCount}</Text>
+            <Text style={styles.statNumber}>{taskStats.completedTasks}</Text>
             <Text style={styles.statLabel}>completas</Text>
           </View>
 
@@ -199,7 +214,7 @@ const HomeScreen = ({ navigation }: any) => {
 
           <View style={styles.moduleStats}>
             <View style={styles.moduleStat}>
-              <Text style={styles.moduleStatNumber}>{taskStats.totalCount}</Text>
+              <Text style={styles.moduleStatNumber}>{taskStats.totalTasks}</Text>
               <Text style={styles.moduleStatLabel}>total</Text>
             </View>
             <View style={styles.moduleStat}>
@@ -210,7 +225,7 @@ const HomeScreen = ({ navigation }: any) => {
             </View>
             <View style={styles.moduleStat}>
               <Text style={[styles.moduleStatNumber, { color: colors.status.success }]}>
-                {taskStats.completedCount}
+                {taskStats.completedTasks}
               </Text>
               <Text style={styles.moduleStatLabel}>completas</Text>
             </View>
@@ -300,6 +315,29 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: spacing.lg,
     paddingBottom: spacing.xl * 2,
+  },
+  brandingHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  logoEmoji: {
+    fontSize: 40,
+  },
+  appName: {
+    fontSize: typography.fontSize['2xl'],
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
+    letterSpacing: -0.5,
+  },
+  profileButton: {
+    padding: spacing.xs,
   },
   header: {
     marginBottom: spacing.lg,

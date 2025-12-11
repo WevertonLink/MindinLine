@@ -7,9 +7,15 @@ import {
   Pressable,
   Alert,
   Share,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { pick, types as DocumentPickerTypes } from '@react-native-documents/picker';
+import {
+  pick,
+  keepLocalCopy,
+  types as DocumentPickerTypes,
+} from '@react-native-documents/picker';
 import RNFS from 'react-native-fs';
 import { useFlashcards } from '../../context/FlashcardsContext';
 import EmptyState from '../../components/EmptyState';
@@ -105,22 +111,46 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
   const handleExportDeck = async () => {
     try {
       setExporting(true);
+
+      // 1. Gerar JSON do deck
       const deckData = await exportDeck(deckId);
 
-      // Em uma versão futura, salvar o arquivo e compartilhar
-      // Por enquanto, apenas mostrar preview
-      Alert.alert(
-        'Deck Exportado',
-        `Deck "${deck.title}" com ${deck.totalCards} cards pronto para export.\n\nEm uma versão futura, você poderá salvar e compartilhar este arquivo.`,
-        [
+      // 2. Criar nome do arquivo
+      const sanitizedTitle = deck.title
+        .replace(/[^a-z0-9]/gi, '_')
+        .toLowerCase();
+      const filename = `${sanitizedTitle}_deck_${Date.now()}.json`;
+
+      // 3. Pedir permissão (Android 10+)
+      if (Platform.OS === 'android') {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
           {
-            text: 'Ver JSON',
-            onPress: () => Alert.alert('JSON Preview', deckData.substring(0, 500) + '...'),
-          },
-          { text: 'OK' },
-        ]
+            title: 'Permissão de Armazenamento',
+            message: 'MindinLine precisa salvar o arquivo exportado',
+            buttonPositive: 'OK',
+          }
+        );
+
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          throw new Error('Permissão de armazenamento negada');
+        }
+      }
+
+      // 4. Salvar em Downloads
+      const path = `${RNFS.DownloadDirectoryPath}/${filename}`;
+      await RNFS.writeFile(path, deckData, 'utf8');
+
+      // 5. Sucesso
+      Alert.alert(
+        'Deck Exportado!',
+        `Deck "${deck.title}" salvo em:\nDownloads/${filename}\n\n${deck.totalCards} cards exportados`,
+        [{ text: 'OK' }]
       );
+
+      console.log('Deck exportado:', { deckId, filename, path });
     } catch (error: any) {
+      console.error('Erro ao exportar deck:', error);
       Alert.alert('Erro', error.message || 'Não foi possível exportar o deck');
     } finally {
       setExporting(false);
@@ -132,29 +162,35 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
     try {
       setImporting(true);
 
-      // Abrir file picker
-      const result = await pick({
+      // 1. Pick retorna ARRAY agora (API v11)
+      const [file] = await pick({
         type: [DocumentPickerTypes.allFiles],
-        copyTo: 'cachesDirectory',
       });
 
-      if (!result || !result.uri) {
-        setImporting(false);
-        return;
+      // 2. Fazer cópia local explicitamente
+      const [localCopy] = await keepLocalCopy({
+        files: [{
+          uri: file.uri,
+          fileName: file.name || 'imported-deck.json',
+        }],
+        destination: 'cachesDirectory',
+      });
+
+      // 3. Ler da cópia local
+      const fileContent = await RNFS.readFile(localCopy.uri, 'utf8');
+
+      // 4. Validar estrutura antes de importar
+      const data = JSON.parse(fileContent);
+      if (!data.version || !data.deck) {
+        throw new Error('Arquivo inválido ou corrompido');
       }
 
-      // Verificar se tem fileCopyUri (arquivo copiado para cache)
-      const fileUri = result.fileCopyUri || result.uri;
-
-      // Ler conteúdo do arquivo
-      const fileContent = await RNFS.readFile(fileUri, 'utf8');
-
-      // Tentar importar
+      // 5. Importar
       await importDeck(fileContent);
 
       Alert.alert(
-        'Sucesso',
-        'Deck importado com sucesso! Volte para a tela inicial para vê-lo.',
+        'Sucesso!',
+        `Deck "${data.deck.title}" importado com ${data.deck.flashcards.length} cards`,
         [
           {
             text: 'OK',
@@ -162,11 +198,9 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
           },
         ]
       );
-      setImporting(false);
     } catch (error: any) {
       // Usuário cancelou
-      if (error && error.code === 'ERR_PICKER_CANCELLED') {
-        setImporting(false);
+      if (error.message === 'User canceled document picker') {
         return;
       }
 
@@ -175,6 +209,7 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
         'Erro',
         error.message || 'Não foi possível importar o deck. Verifique se o arquivo é válido.'
       );
+    } finally {
       setImporting(false);
     }
   };

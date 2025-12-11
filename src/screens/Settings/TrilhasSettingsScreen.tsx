@@ -19,24 +19,24 @@ import {
   typography,
 } from '../../theme/globalStyles';
 
-const FlowKeeperSettingsScreen = ({ navigation }: any) => {
+const TrilhasSettingsScreen = ({ navigation }: any) => {
   const { settings, updateSettings, resetSection } = useSettings();
 
   const [defaultStepDuration, setDefaultStepDuration] = useState(
-    settings.flowKeeper.defaultStepDuration.toString()
+    settings.trilhas.defaultStepDuration.toString()
   );
 
   const handleSave = async () => {
     const duration = parseInt(defaultStepDuration);
 
     if (isNaN(duration) || duration < 1 || duration > 480) {
-      Alert.alert('Erro', 'Duração do step deve estar entre 1 e 480 minutos (8h)');
+      Alert.alert('Erro', 'Duração da etapa deve estar entre 1 e 480 minutos (8h)');
       return;
     }
 
     try {
       await updateSettings({
-        flowKeeper: {
+        trilhas: {
           defaultStepDuration: duration,
         },
       });
@@ -50,7 +50,7 @@ const FlowKeeperSettingsScreen = ({ navigation }: any) => {
   const handleReset = () => {
     Alert.alert(
       'Resetar Configurações',
-      'Tem certeza que deseja resetar as configurações do FlowKeeper para os valores padrão?',
+      'Tem certeza que deseja resetar as configurações de Trilhas de Aprendizado para os valores padrão?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -58,7 +58,7 @@ const FlowKeeperSettingsScreen = ({ navigation }: any) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await resetSection('flowKeeper');
+              await resetSection('trilhas');
               setDefaultStepDuration('30');
               Alert.alert('Sucesso', 'Configurações resetadas!');
             } catch (error) {
@@ -71,7 +71,7 @@ const FlowKeeperSettingsScreen = ({ navigation }: any) => {
   };
 
   const handleToggle = async (key: string, value: boolean) => {
-    await updateSettings({ flowKeeper: { [key]: value } });
+    await updateSettings({ trilhas: { [key]: value } });
   };
 
   return (
@@ -87,7 +87,7 @@ const FlowKeeperSettingsScreen = ({ navigation }: any) => {
 
           <View style={styles.inputRow}>
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Duração padrão do step (min)</Text>
+              <Text style={styles.inputLabel}>Duração padrão da etapa (min)</Text>
               <TextInput
                 style={styles.input}
                 value={defaultStepDuration}
@@ -108,8 +108,8 @@ const FlowKeeperSettingsScreen = ({ navigation }: any) => {
           <View style={styles.infoBox}>
             <Icon name="information-circle-outline" size={16} color={colors.status.info} />
             <Text style={styles.infoText}>
-              Duração sugerida ao criar novos steps em uma trilha de estudos.
-              Você pode ajustar individualmente para cada step.
+              Duração sugerida ao criar novas etapas em uma trilha de estudos.
+              Você pode ajustar individualmente para cada etapa.
             </Text>
           </View>
         </View>
@@ -120,13 +120,13 @@ const FlowKeeperSettingsScreen = ({ navigation }: any) => {
 
           <View style={styles.settingRow}>
             <View style={styles.settingLeft}>
-              <Text style={styles.settingLabel}>Auto-reproduzir próximo step</Text>
+              <Text style={styles.settingLabel}>Auto-reproduzir próxima etapa</Text>
               <Text style={styles.settingDescription}>
-                Avança automaticamente para o próximo step ao completar um
+                Avança automaticamente para a próxima etapa ao completar uma
               </Text>
             </View>
             <Switch
-              value={settings.flowKeeper.autoPlayNextStep}
+              value={settings.trilhas.autoPlayNextStep}
               onValueChange={(value) => handleToggle('autoPlayNextStep', value)}
               trackColor={{ false: colors.glass.border, true: colors.accent.primary }}
               thumbColor={colors.text.primary}
@@ -143,7 +143,7 @@ const FlowKeeperSettingsScreen = ({ navigation }: any) => {
               </Text>
             </View>
             <Switch
-              value={settings.flowKeeper.markMaterialAsCompletedOnView}
+              value={settings.trilhas.markMaterialAsCompletedOnView}
               onValueChange={(value) => handleToggle('markMaterialAsCompletedOnView', value)}
               trackColor={{ false: colors.glass.border, true: colors.accent.primary }}
               thumbColor={colors.text.primary}
@@ -156,11 +156,11 @@ const FlowKeeperSettingsScreen = ({ navigation }: any) => {
             <View style={styles.settingLeft}>
               <Text style={styles.settingLabel}>Mostrar barra de progresso</Text>
               <Text style={styles.settingDescription}>
-                Exibe progresso visual da trilha e dos steps
+                Exibe progresso visual da trilha e das etapas
               </Text>
             </View>
             <Switch
-              value={settings.flowKeeper.showProgressBar}
+              value={settings.trilhas.showProgressBar}
               onValueChange={(value) => handleToggle('showProgressBar', value)}
               trackColor={{ false: colors.glass.border, true: colors.accent.primary }}
               thumbColor={colors.text.primary}
@@ -173,7 +173,7 @@ const FlowKeeperSettingsScreen = ({ navigation }: any) => {
           <Icon name="bulb-outline" size={16} color={colors.status.warning} />
           <Text style={styles.tipText}>
             <Text style={{ fontWeight: typography.fontWeight.bold }}>Dica: </Text>
-            FlowKeeper ajuda você a organizar trilhas de estudo complexas dividindo-as em steps
+            Trilhas de Aprendizado ajudam você a organizar estudos complexos dividindo-os em etapas
             menores e gerenciáveis. Use para cursos, projetos ou qualquer aprendizado sequencial.
           </Text>
         </View>
@@ -310,4 +310,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FlowKeeperSettingsScreen;
+export default TrilhasSettingsScreen;

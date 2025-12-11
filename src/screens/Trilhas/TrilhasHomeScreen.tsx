@@ -10,8 +10,8 @@ import {
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useFlowKeeper } from '../../context/FlowKeeperContext';
-import FlowCard from '../../components/FlowCard';
+import { useTrilhas } from '../../context/TrilhasContext';
+import TrilhaCard from '../../components/TrilhaCard';
 import EmptyState from '../../components/EmptyState';
 import {
   globalStyles,
@@ -20,30 +20,30 @@ import {
   borderRadius,
   typography,
 } from '../../theme/globalStyles';
-import { filterFlowsBySearch } from '../../features/flowkeeper/utils';
+import { filterTrilhasBySearch } from '../../features/trilhas/utils';
 
-const FlowKeeperHomeScreen = ({ navigation }: any) => {
-  const { flows, stats, loading, deleteFlow } = useFlowKeeper();
+const TrilhasHomeScreen = ({ navigation }: any) => {
+  const { trilhas, stats, loading, deletarTrilha } = useTrilhas();
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filtrar trilhas por busca
-  const filteredFlows = filterFlowsBySearch(flows, searchQuery);
+  const trilhasFiltradas = filterTrilhasBySearch(trilhas, searchQuery);
 
   // Handler para criar nova trilha
-  const handleCreateFlow = () => {
-    navigation.navigate('CreateFlow');
+  const handleCriarTrilha = () => {
+    navigation.navigate('CreateTrilha');
   };
 
   // Handler para abrir detalhes da trilha
-  const handleOpenFlow = (flowId: string) => {
-    navigation.navigate('FlowDetail', { flowId });
+  const handleAbrirTrilha = (trilhaId: string) => {
+    navigation.navigate('TrilhaDetail', { trilhaId });
   };
 
   // Handler para deletar trilha
-  const handleDeleteFlow = (flowId: string, flowTitle: string) => {
+  const handleDeletarTrilha = (trilhaId: string, trilhaTitulo: string) => {
     Alert.alert(
       'Deletar Trilha',
-      `Tem certeza que deseja deletar "${flowTitle}"?`,
+      `Tem certeza que deseja deletar "${trilhaTitulo}"?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -51,7 +51,7 @@ const FlowKeeperHomeScreen = ({ navigation }: any) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteFlow(flowId);
+              await deletarTrilha(trilhaId);
             } catch (error) {
               Alert.alert('Erro', 'Não foi possível deletar a trilha');
             }
@@ -87,14 +87,14 @@ const FlowKeeperHomeScreen = ({ navigation }: any) => {
           </Text>
 
           {/* Stats */}
-          {flows.length > 0 && (
+          {trilhas.length > 0 && (
             <View style={styles.statsContainer}>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{stats.totalFlows}</Text>
+                <Text style={styles.statValue}>{stats.totalTrilhas}</Text>
                 <Text style={styles.statLabel}>Trilhas</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{stats.activeFlows}</Text>
+                <Text style={styles.statValue}>{stats.activeTrilhas}</Text>
                 <Text style={styles.statLabel}>Ativas</Text>
               </View>
               <View style={styles.statItem}>
@@ -106,7 +106,7 @@ const FlowKeeperHomeScreen = ({ navigation }: any) => {
         </View>
 
         {/* Search bar */}
-        {flows.length > 0 && (
+        {trilhas.length > 0 && (
           <View style={styles.searchContainer}>
             <Icon name="search-outline" size={20} color={colors.text.tertiary} />
             <TextInput
@@ -125,28 +125,28 @@ const FlowKeeperHomeScreen = ({ navigation }: any) => {
         )}
 
         {/* Lista de trilhas */}
-        {filteredFlows.length > 0 ? (
-          <View style={styles.flowsList}>
-            {filteredFlows.map(flow => (
-              <FlowCard
-                key={flow.id}
-                flow={flow}
-                onPress={() => handleOpenFlow(flow.id)}
-                onLongPress={() => handleDeleteFlow(flow.id, flow.title)}
+        {trilhasFiltradas.length > 0 ? (
+          <View style={styles.trilhasList}>
+            {trilhasFiltradas.map(trilha => (
+              <TrilhaCard
+                key={trilha.id}
+                trilha={trilha}
+                onPress={() => handleAbrirTrilha(trilha.id)}
+                onLongPress={() => handleDeletarTrilha(trilha.id, trilha.title)}
               />
             ))}
           </View>
-        ) : flows.length > 0 ? (
+        ) : trilhas.length > 0 ? (
           <EmptyState
             icon="search-outline"
             title="Nenhum resultado"
-            message={`Não encontramos fluxos com "${searchQuery}"`}
+            message={`Não encontramos trilhas com "${searchQuery}"`}
           />
         ) : (
           <EmptyState
             icon="library-outline"
-            title="Nenhum fluxo criado"
-            message="Comece criando seu primeiro fluxo de aprendizado para organizar seu estudo de forma estruturada"
+            title="Nenhuma trilha criada"
+            message="Comece criando sua primeira trilha de aprendizado para organizar seu estudo de forma estruturada"
           />
         )}
 
@@ -156,11 +156,11 @@ const FlowKeeperHomeScreen = ({ navigation }: any) => {
             globalStyles.buttonPrimary,
             pressed && styles.buttonPressed,
           ]}
-          onPress={handleCreateFlow}
+          onPress={handleCriarTrilha}
         >
           <Icon name="add" size={24} color={colors.text.primary} />
           <Text style={[globalStyles.buttonText, { marginLeft: spacing.sm }]}>
-            Criar Novo Fluxo
+            Criar Nova Trilha
           </Text>
         </Pressable>
       </ScrollView>
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     paddingVertical: spacing.xs,
   },
-  flowsList: {
+  trilhasList: {
     marginBottom: spacing.lg,
   },
   buttonPressed: {
@@ -228,4 +228,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FlowKeeperHomeScreen;
+export default TrilhasHomeScreen;

@@ -11,9 +11,9 @@ import {
   Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useFlowKeeper } from '../../context/FlowKeeperContext';
-import { FlowCategory } from '../../features/flowkeeper/types';
-import { validateTitle, translateCategory } from '../../features/flowkeeper/utils';
+import { useTrilhas } from '../../context/TrilhasContext';
+import { CategoriaTrilha } from '../../features/trilhas/types';
+import { validateTitle, translateCategory } from '../../features/trilhas/utils';
 import {
   globalStyles,
   colors,
@@ -22,7 +22,7 @@ import {
   typography,
 } from '../../theme/globalStyles';
 
-const CATEGORIES: FlowCategory[] = [
+const CATEGORIES: CategoriaTrilha[] = [
   'programming',
   'language',
   'science',
@@ -32,15 +32,15 @@ const CATEGORIES: FlowCategory[] = [
   'other',
 ];
 
-const CreateFlowScreen = ({ navigation }: any) => {
-  const { createFlow } = useFlowKeeper();
+const CreateTrilhaScreen = ({ navigation }: any) => {
+  const { criarTrilha } = useTrilhas();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<FlowCategory | undefined>();
+  const [selectedCategory, setSelectedCategory] = useState<CategoriaTrilha | undefined>();
   const [isCreating, setIsCreating] = useState(false);
 
-  // Handler para criar fluxo
+  // Handler para criar trilha
   const handleCreate = async () => {
     // Validar título
     if (!validateTitle(title)) {
@@ -51,16 +51,16 @@ const CreateFlowScreen = ({ navigation }: any) => {
     try {
       setIsCreating(true);
 
-      const newFlow = await createFlow({
+      const novaTrilha = await criarTrilha({
         title: title.trim(),
         description: description.trim() || undefined,
         category: selectedCategory,
       });
 
-      Alert.alert('Sucesso', 'Fluxo criado com sucesso!');
+      Alert.alert('Sucesso', 'Trilha criada com sucesso!');
       navigation.goBack();
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível criar o fluxo');
+      Alert.alert('Erro', 'Não foi possível criar a trilha');
     } finally {
       setIsCreating(false);
     }
@@ -78,7 +78,7 @@ const CreateFlowScreen = ({ navigation }: any) => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={globalStyles.title}>Criar Novo Fluxo</Text>
+          <Text style={globalStyles.title}>Criar Nova Trilha</Text>
           <Text style={globalStyles.subtitle}>
             Organize seu aprendizado em etapas estruturadas
           </Text>
@@ -107,7 +107,7 @@ const CreateFlowScreen = ({ navigation }: any) => {
           <Text style={styles.label}>Descrição (opcional)</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder="Descreva o objetivo deste fluxo de aprendizado..."
+            placeholder="Descreva o objetivo desta trilha de aprendizado..."
             placeholderTextColor={colors.text.tertiary}
             value={description}
             onChangeText={setDescription}
@@ -158,7 +158,7 @@ const CreateFlowScreen = ({ navigation }: any) => {
         <View style={styles.infoBox}>
           <Icon name="information-circle-outline" size={20} color={colors.accent.primary} />
           <Text style={styles.infoText}>
-            Após criar o fluxo, você poderá adicionar etapas e materiais de estudo
+            Após criar a trilha, você poderá adicionar etapas e materiais de estudo
           </Text>
         </View>
       </ScrollView>
@@ -184,7 +184,7 @@ const CreateFlowScreen = ({ navigation }: any) => {
         >
           <Icon name="checkmark" size={20} color={colors.text.primary} />
           <Text style={[globalStyles.buttonText, { marginLeft: spacing.xs }]}>
-            {isCreating ? 'Criando...' : 'Criar Fluxo'}
+            {isCreating ? 'Criando...' : 'Criar Trilha'}
           </Text>
         </Pressable>
       </View>
@@ -291,4 +291,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CreateFlowScreen;
+export default CreateTrilhaScreen;

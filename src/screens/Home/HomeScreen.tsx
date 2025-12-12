@@ -11,9 +11,10 @@ import { useTasks } from '../../context/TasksContext';
 import { useFlashcards } from '../../context/FlashcardsContext';
 import { useTimeline } from '../../context/TimelineContext';
 import { useTrilhas } from '../../context/TrilhasContext';
-import { ModuleCard, Card, StatsRow, IconButton } from '../../components';
+import { ModuleCard, Card, StatsRow, IconButton, InsightCard } from '../../components';
 import HelpButton from '../../components/HelpButton';
 import { helpContent } from '../../data/helpContent';
+import { generateInsights } from '../../utils/insights';
 import {
   globalStyles,
   colors,
@@ -53,6 +54,27 @@ const HomeScreen = ({ navigation }: any) => {
     if (flashcardStats.cardsToReviewToday > 0) return `${flashcardStats.cardsToReviewToday} cards para revisar`;
     return 'Pronto para aprender algo novo?';
   };
+
+  // Generate insights based on user data
+  const insights = generateInsights({
+    currentStreak: timelineStats.currentStreak,
+    longestStreak: timelineStats.longestStreak,
+    totalActivities: timelineStats.totalActivities,
+    thisWeekActivities: timelineStats.thisWeekActivities,
+    thisWeekFocusTime: timelineStats.thisWeekFocusTime,
+    activitiesPerDay: timelineStats.activitiesPerDay,
+    mostProductiveDay: timelineStats.mostProductiveDay,
+    totalCards: flashcardStats.totalCards,
+    cardsToReviewToday: flashcardStats.cardsToReviewToday,
+    cardsMastered: flashcardStats.cardsMastered,
+    activeDecks: flashcardStats.activeDecks,
+    todoTasks: taskStats.todoTasks,
+    inProgressTasks: taskStats.inProgressTasks,
+    completedTasks: taskStats.completedTasks,
+    overdueTasks: taskStats.overdueTasks,
+    totalTrilhas: trilhas.length,
+    completedTrilhas: trilhas.filter(t => t.completed).length,
+  });
 
   return (
     <View style={globalStyles.container}>
@@ -95,6 +117,16 @@ const HomeScreen = ({ navigation }: any) => {
             ]}
           />
         </Card>
+
+        {/* Insights */}
+        {insights.length > 0 && (
+          <View style={styles.insightsSection}>
+            <Text style={styles.sectionTitle}>💡 Insights</Text>
+            {insights.map((insight, index) => (
+              <InsightCard key={insight.id} insight={insight} index={index} />
+            ))}
+          </View>
+        )}
 
         {/* Quick Actions */}
         <Card variant="glass" size="medium">
@@ -245,6 +277,9 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
   },
   statsCard: {
+    marginBottom: spacing.lg,
+  },
+  insightsSection: {
     marginBottom: spacing.lg,
   },
   sectionTitle: {

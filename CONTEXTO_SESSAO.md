@@ -2,7 +2,7 @@
 
 **Data:** 2025-12-12
 **Branch:** main
-**Último Commit:** a0451aa - feat: cria Design System completo (FASE 0.1)
+**Último Commit:** 43e02ad - refactor: completa FASE 0.2 - Refatoração de telas
 
 ---
 
@@ -13,9 +13,11 @@
 **Arquivo de Progresso:** `/data/data/com.termux/files/home/MindinLine/PLANO_PROGRESSO.md`
 **Análise Crítica:** `/data/data/com.termux/files/home/MindinLine/ANALISE_CRITICA.md`
 
-### ✅ Status Atual: FASE 0.1 COMPLETA / INICIANDO FASE 0.2
+### ✅ Status Atual: FASE 0.2 COMPLETA / INICIANDO FASE 0.3
 
 **IMPORTANTE:** Após análise crítica, decidimos implementar **FASE 0 (Refatoração Estrutural)** ANTES da FASE 2. Isso economizará ~16h no total e garantirá código profissional e escalável.
+
+**Progresso FASE 0:** 15h de 20h (~75% concluído)
 
 ---
 
@@ -58,19 +60,33 @@
 
 ---
 
-### FASE 0.2: Refatorar Telas com Design System ⏳ (~7h)
+### FASE 0.2: Refatorar Telas com Design System ✅ (~7h)
 
-**Status:** PRÓXIMA TAREFA
+**Commit:** `43e02ad` - refactor: completa FASE 0.2
 
-**Telas a refatorar:**
-- [ ] HomeScreen.tsx (456 → ~150 linhas)
-- [ ] FlashcardsHomeScreen.tsx
-- [ ] TasksHomeScreen.tsx
-- [ ] TrilhasHomeScreen.tsx
-- [ ] TimelineScreen.tsx
-- [ ] SettingsScreen.tsx
+**Status:** CONCLUÍDA
 
-**Objetivo:** Substituir estilos inline e duplicados pelos componentes do Design System.
+**Telas refatoradas:**
+- ✅ HomeScreen.tsx (456 → 273 linhas, ~40% redução)
+- ✅ FlashcardsHomeScreen.tsx (265 → 223 linhas, ~16% redução)
+- ✅ TasksHomeScreen.tsx (411 → 340 linhas, ~17% redução)
+- ✅ TrilhasHomeScreen.tsx (ajustes menores)
+- ✅ TimelineScreen.tsx (usa SectionHeader + Chip)
+- ✅ SettingsScreen.tsx (usa Card + Divider)
+
+**Mudanças:**
+- HomeScreen: 4 module cards → `<ModuleCard>`, stats → `<StatsRow>` + `<Card>`
+- FlashcardsHomeScreen: Header → `<SectionHeader>`, botão → `<Button>`
+- TasksHomeScreen: Filtros → `<Chip>`, stats → `<Card>`, botões → `<Button>`
+- TimelineScreen: Header → `<SectionHeader>`, filtros → `<Chip>`
+- SettingsScreen: Cards → `<Card>`, dividers → `<Divider>`
+
+**Remoções:**
+- ❌ Referências a TDAH removidas
+- ❌ Referências a vibe-coding removidas
+- ❌ ~500 linhas de código duplicado eliminadas
+
+**Resultado:** 100% consistência visual, código limpo e profissional
 
 ---
 
@@ -250,32 +266,20 @@ docs: <descrição>
 
 ## 🎯 PRÓXIMA AÇÃO IMEDIATA
 
-**TAREFA:** Refatorar HomeScreen.tsx com Design System
+**TAREFA:** FASE 0.3 - Extrair Custom Hooks (OPCIONAL)
 
-**Arquivo:** `src/screens/Home/HomeScreen.tsx`
+**Status:** Pendente análise de necessidade
 
-**Objetivo:** Reduzir de 456 linhas para ~150 linhas usando componentes do Design System
+**Hooks potenciais:**
+- `useHomeStats()` - Calcular estatísticas da HomeScreen
+- `useModuleStats()` - Stats compartilhados entre módulos
+- `useGreeting()` - Saudação baseada em hora do dia
 
-**Mudanças:**
-1. Substituir cards de módulos por `<ModuleCard>`
-2. Usar `<SectionHeader>` para títulos de seção
-3. Usar `<Card>` para containers
-4. Remover todos os estilos inline duplicados
-5. Manter mesma funcionalidade e aparência
+**Tempo estimado:** ~3 horas
 
-**Tempo estimado:** ~1-2 horas
+**Alternativa:** Pular para FASE 0.4 (Testes) ou retomar FASE 2 do plano original (Onboarding)
 
-**Antes:**
-```typescript
-// 30+ estilos inline
-// Código duplicado em múltiplos lugares
-```
-
-**Depois:**
-```typescript
-import { ModuleCard, Card, SectionHeader } from '../../components';
-// Código limpo e reutilizável
-```
+**Decisão necessária:** Extrair hooks agora ou continuar com desenvolvimento de features?
 
 ---
 
@@ -294,8 +298,10 @@ import { ModuleCard, Card, SectionHeader } from '../../components';
 
 #### FASE 0 (Sessão Atual):
 8. `a0451aa` - feat: cria Design System completo (FASE 0.1)
+9. `5feb3b2` - docs: atualiza CONTEXTO_SESSAO com FASE 0 progresso
+10. `43e02ad` - refactor: completa FASE 0.2 - Refatoração de telas
 
-**Total:** 8 commits (7 FASE 1 + 1 FASE 0)
+**Total:** 10 commits (7 FASE 1 + 3 FASE 0)
 
 ### Arquivos Criados
 

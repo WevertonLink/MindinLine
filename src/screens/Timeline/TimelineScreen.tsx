@@ -11,6 +11,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTimeline } from '../../context/TimelineContext';
 import { useFlashcards } from '../../context/FlashcardsContext';
+import { useToast } from '../../context/ToastContext';
 import ActivityCard from '../../components/ActivityCard';
 import { Card, Chip, SectionHeader, StatsRow } from '../../components';
 import EmptyState from '../../components/EmptyState';
@@ -37,6 +38,7 @@ const TimelineScreen = ({ navigation }: any) => {
     deleteActivity,
   } = useTimeline();
   const { stats: flashcardsStats } = useFlashcards();
+  const toast = useToast();
 
   const dailyActivities = getDailyActivities();
 
@@ -52,8 +54,9 @@ const TimelineScreen = ({ navigation }: any) => {
           onPress: async () => {
             try {
               await deleteActivity(activityId);
+              toast.success('Atividade deletada', 'A atividade foi removida da timeline.');
             } catch (error) {
-              Alert.alert(
+              toast.error(
                 errorMessages.generic.title,
                 errorMessages.generic.message
               );

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTasks } from '../../context/TasksContext';
+import { useToast } from '../../context/ToastContext';
 import TaskCard from '../../components/TaskCard';
 import { Button, Card, Chip, SectionHeader } from '../../components';
 import EmptyState from '../../components/EmptyState';
@@ -34,6 +35,7 @@ import { TaskStatus, CreateTaskInput } from '../../features/tasks/types';
 
 const TasksHomeScreen = ({ navigation }: any) => {
   const { tasks, stats, loading, createTask, toggleTaskStatus, deleteTask } = useTasks();
+  const toast = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<TaskStatus | 'all'>('all');
   const [showQuickAdd, setShowQuickAdd] = useState(false);
@@ -51,7 +53,7 @@ const TasksHomeScreen = ({ navigation }: any) => {
   // Quick add task
   const handleQuickAdd = async () => {
     if (quickTaskTitle.trim().length < 3) {
-      Alert.alert(
+      toast.warning(
         errorMessages.validation.emptyTitle.title,
         errorMessages.validation.emptyTitle.message
       );
@@ -65,10 +67,11 @@ const TasksHomeScreen = ({ navigation }: any) => {
       };
 
       await createTask(input);
+      toast.success('Tarefa criada!', `"${quickTaskTitle.trim()}" adicionada à lista.`);
       setQuickTaskTitle('');
       setShowQuickAdd(false);
     } catch (error) {
-      Alert.alert(
+      toast.error(
         errorMessages.tasks.create.title,
         errorMessages.tasks.create.message
       );
@@ -89,8 +92,9 @@ const TasksHomeScreen = ({ navigation }: any) => {
           onPress: async () => {
             try {
               await deleteTask(taskId);
+              toast.success('Tarefa deletada', `"${taskTitle}" foi removida.`);
             } catch (error) {
-              Alert.alert(
+              toast.error(
                 errorMessages.tasks.delete.title,
                 errorMessages.tasks.delete.message
               );

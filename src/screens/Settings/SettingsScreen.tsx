@@ -14,6 +14,7 @@ import { pick, types as DocumentPickerTypes } from '@react-native-documents/pick
 import RNFS from 'react-native-fs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSettings } from '../../context/SettingsContext';
+import { useToast } from '../../context/ToastContext';
 import { Card, Divider, SectionHeader } from '../../components';
 import HelpButton from '../../components/HelpButton';
 import { helpContent } from '../../data/helpContent';
@@ -38,6 +39,7 @@ const SettingsScreen = ({ navigation }: any) => {
     clearAllData,
     updateUsageStats,
   } = useSettings();
+  const toast = useToast();
 
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -56,13 +58,12 @@ const SettingsScreen = ({ navigation }: any) => {
       const data = await exportData();
       const jsonString = JSON.stringify(data, null, 2);
 
-      Alert.alert(
+      toast.success(
         successMessages.settings.exported.title,
-        successMessages.settings.exported.message,
-        [{ text: 'OK' }]
+        successMessages.settings.exported.message
       );
     } catch (error) {
-      Alert.alert(
+      toast.error(
         errorMessages.settings.export.title,
         errorMessages.settings.export.message
       );
@@ -130,10 +131,13 @@ const SettingsScreen = ({ navigation }: any) => {
             onPress: async () => {
               try {
                 await importData(data);
-                // O Alert de sucesso já está no importData do Context
+                toast.success(
+                  successMessages.settings.imported.title,
+                  successMessages.settings.imported.message
+                );
                 setImporting(false);
               } catch (error) {
-                Alert.alert(
+                toast.error(
                   errorMessages.settings.import.title,
                   errorMessages.settings.import.message
                 );
@@ -156,7 +160,7 @@ const SettingsScreen = ({ navigation }: any) => {
         ? errorMessages.settings.invalidFile
         : errorMessages.settings.import;
 
-      Alert.alert(errorMsg.title, errorMsg.message);
+      toast.error(errorMsg.title, errorMsg.message);
       setImporting(false);
     }
   };
@@ -176,8 +180,9 @@ const SettingsScreen = ({ navigation }: any) => {
             try {
               await clearAllData();
               await updateUsageStats();
+              toast.success('Dados limpos', 'Todos os dados foram removidos com sucesso.');
             } catch (error) {
-              Alert.alert(
+              toast.error(
                 errorMessages.generic.title,
                 errorMessages.generic.message
               );
@@ -200,12 +205,12 @@ const SettingsScreen = ({ navigation }: any) => {
           onPress: async () => {
             try {
               await resetSettings();
-              Alert.alert(
+              toast.success(
                 successMessages.settings.reset.title,
                 successMessages.settings.reset.message
               );
             } catch (error) {
-              Alert.alert(
+              toast.error(
                 errorMessages.generic.title,
                 errorMessages.generic.message
               );
@@ -227,12 +232,12 @@ const SettingsScreen = ({ navigation }: any) => {
           onPress: async () => {
             try {
               await AsyncStorage.removeItem('@mindinline:onboarding_completed');
-              Alert.alert(
-                'Sucesso',
-                'O onboarding será exibido novamente ao reiniciar o app.'
+              toast.success(
+                'Onboarding resetado',
+                'O tutorial será exibido novamente ao reiniciar o app.'
               );
             } catch (error) {
-              Alert.alert(
+              toast.error(
                 errorMessages.generic.title,
                 errorMessages.generic.message
               );

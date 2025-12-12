@@ -5,13 +5,16 @@ import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BottomTabNavigator from './BottomTabNavigator';
 import OnboardingScreen from '../screens/Onboarding/OnboardingScreen';
+import { ToastProvider, useToast } from '../context/ToastContext';
+import { ToastContainer } from '../components';
 import { colors, globalStyles } from '../theme/globalStyles';
 
 const Stack = createStackNavigator();
 
-const AppNavigator = () => {
+const NavigationContent = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+  const { toasts, hideToast } = useToast();
 
   useEffect(() => {
     checkOnboardingStatus();
@@ -42,24 +45,37 @@ const AppNavigator = () => {
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: false,
-          cardStyle: {
-            backgroundColor: colors.background.primary,
-          },
-        }}
-      >
-        {!hasCompletedOnboarding ? (
-          <Stack.Screen name="Onboarding">
-            {() => <OnboardingScreen onComplete={handleOnboardingComplete} />}
-          </Stack.Screen>
-        ) : (
-          <Stack.Screen name="MainTabs" component={BottomTabNavigator} />
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+    <>
+      <NavigationContainer>
+        <Stack.Navigator
+          screenOptions={{
+            headerShown: false,
+            cardStyle: {
+              backgroundColor: colors.background.primary,
+            },
+          }}
+        >
+          {!hasCompletedOnboarding ? (
+            <Stack.Screen name="Onboarding">
+              {() => <OnboardingScreen onComplete={handleOnboardingComplete} />}
+            </Stack.Screen>
+          ) : (
+            <Stack.Screen name="MainTabs" component={BottomTabNavigator} />
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+
+      {/* Toast Container - Renders on top of everything */}
+      <ToastContainer toasts={toasts} onHide={hideToast} />
+    </>
+  );
+};
+
+const AppNavigator = () => {
+  return (
+    <ToastProvider>
+      <NavigationContent />
+    </ToastProvider>
   );
 };
 

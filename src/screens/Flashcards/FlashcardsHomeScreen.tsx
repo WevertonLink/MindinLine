@@ -8,6 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { useFlashcards } from '../../context/FlashcardsContext';
+import { useToast } from '../../context/ToastContext';
 import DeckCard from '../../components/DeckCard';
 import { Button, Card, SectionHeader } from '../../components';
 import EmptyState from '../../components/EmptyState';
@@ -25,6 +26,7 @@ import { filterDecksBySearch } from '../../features/flashcards/utils';
 
 const FlashcardsHomeScreen = ({ navigation }: any) => {
   const { decks, stats, loading, deleteDeck } = useFlashcards();
+  const toast = useToast();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredDecks = filterDecksBySearch(decks, searchQuery);
@@ -51,8 +53,9 @@ const FlashcardsHomeScreen = ({ navigation }: any) => {
           onPress: async () => {
             try {
               await deleteDeck(deckId);
+              toast.success('Deck deletado', `"${deckTitle}" foi removido.`);
             } catch (error) {
-              Alert.alert(
+              toast.error(
                 errorMessages.flashcards.deleteDeck.title,
                 errorMessages.flashcards.deleteDeck.message
               );

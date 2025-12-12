@@ -13,6 +13,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { pick, types as DocumentPickerTypes } from '@react-native-documents/picker';
 import RNFS from 'react-native-fs';
 import { useSettings } from '../../context/SettingsContext';
+import { Card, Divider, SectionHeader } from '../../components';
 import HelpButton from '../../components/HelpButton';
 import { helpContent } from '../../data/helpContent';
 import {
@@ -211,7 +212,7 @@ const SettingsScreen = ({ navigation }: any) => {
 
         {/* Usage Stats */}
         {usageStats && (
-          <View style={globalStyles.glassCard}>
+          <Card variant="glass" size="medium">
             <Text style={styles.sectionTitle}>Estatísticas de Uso</Text>
             <View style={styles.statsGrid}>
               <View style={styles.statItem}>
@@ -239,11 +240,11 @@ const SettingsScreen = ({ navigation }: any) => {
                 <Text style={styles.statLabel}>min foco</Text>
               </View>
             </View>
-          </View>
+          </Card>
         )}
 
         {/* Preferências Gerais */}
-        <View style={globalStyles.glassCard}>
+        <Card variant="glass" size="medium">
           <Text style={styles.sectionTitle}>Preferências</Text>
 
           <View style={styles.settingRow}>
@@ -259,7 +260,7 @@ const SettingsScreen = ({ navigation }: any) => {
             />
           </View>
 
-          <View style={globalStyles.divider} />
+          <Divider spacing="none" />
 
           <View style={styles.settingRow}>
             <View style={styles.settingLeft}>
@@ -400,20 +401,12 @@ const SettingsScreen = ({ navigation }: any) => {
         </View>
 
         {/* Sobre */}
-        <View style={globalStyles.glassCardSmall}>
+        <Card variant="glass" size="small">
           <View style={styles.aboutRow}>
             <Icon name="phone-portrait-outline" size={20} color={colors.text.tertiary} />
             <Text style={styles.aboutText}>MindinLine v{settings.version}</Text>
           </View>
-          <View style={styles.aboutRow}>
-            <Icon name="heart-outline" size={20} color={colors.status.error} />
-            <Text style={styles.aboutText}>App para pessoas com TDAH</Text>
-          </View>
-          <View style={styles.aboutRow}>
-            <Icon name="code-slash-outline" size={20} color={colors.text.tertiary} />
-            <Text style={styles.aboutText}>Desenvolvido com vibe-coding</Text>
-          </View>
-        </View>
+        </Card>
       </ScrollView>
     </View>
   );

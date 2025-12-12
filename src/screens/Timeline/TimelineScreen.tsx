@@ -12,6 +12,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useTimeline } from '../../context/TimelineContext';
 import { useFlashcards } from '../../context/FlashcardsContext';
 import ActivityCard from '../../components/ActivityCard';
+import { Card, Chip, SectionHeader, StatsRow } from '../../components';
 import EmptyState from '../../components/EmptyState';
 import HelpButton from '../../components/HelpButton';
 import { helpContent } from '../../data/helpContent';
@@ -106,15 +107,12 @@ const TimelineScreen = ({ navigation }: any) => {
   const renderListHeader = useCallback(() => (
     <>
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerTitleRow}>
-          <Text style={globalStyles.title}>Timeline</Text>
-          <HelpButton content={helpContent['timeline.overview'].content} />
-        </View>
-        <Text style={globalStyles.subtitle}>
-          Acompanhe sua evolução cognitiva
-        </Text>
-      </View>
+      <SectionHeader
+        title="Timeline"
+        subtitle="Acompanhe sua evolução cognitiva"
+        icon="time-outline"
+        helpContent={helpContent['timeline.overview'].content}
+      />
 
       {/* Flashcards a Revisar Widget */}
       {flashcardsStats.cardsToReviewToday > 0 && (
@@ -226,25 +224,15 @@ const TimelineScreen = ({ navigation }: any) => {
 
       {/* Filtros de Range */}
       <View style={styles.filtersContainer}>
-        {timeRanges.map(range => {
-          const isSelected = filters.timeRange === range.value;
-          return (
-            <Pressable
-              key={range.value}
-              style={[styles.filterChip, isSelected && styles.filterChipSelected]}
-              onPress={() => setFilters({ timeRange: range.value })}
-            >
-              <Text
-                style={[
-                  styles.filterChipText,
-                  isSelected && styles.filterChipTextSelected,
-                ]}
-              >
-                {range.label}
-              </Text>
-            </Pressable>
-          );
-        })}
+        {timeRanges.map(range => (
+          <Chip
+            key={range.value}
+            label={range.label}
+            variant="primary"
+            selected={filters.timeRange === range.value}
+            onPress={() => setFilters({ timeRange: range.value })}
+          />
+        ))}
       </View>
     </>
   ), [flashcardsStats.cardsToReviewToday, stats, filters.timeRange, navigation, setFilters]);

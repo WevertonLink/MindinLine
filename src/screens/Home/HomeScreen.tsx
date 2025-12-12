@@ -5,29 +5,25 @@ import {
   StyleSheet,
   ScrollView,
   Pressable,
-  Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTasks } from '../../context/TasksContext';
 import { useFlashcards } from '../../context/FlashcardsContext';
 import { useTimeline } from '../../context/TimelineContext';
 import { useTrilhas } from '../../context/TrilhasContext';
+import { ModuleCard, Card, StatsRow, IconButton } from '../../components';
 import HelpButton from '../../components/HelpButton';
 import { helpContent } from '../../data/helpContent';
 import {
   globalStyles,
   colors,
   spacing,
-  borderRadius,
   typography,
 } from '../../theme/globalStyles';
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - spacing.lg * 2 - spacing.md) / 2;
-
 const HomeScreen = ({ navigation }: any) => {
   const { tasks, stats: taskStats } = useTasks();
-  const { decks, stats: flashcardStats } = useFlashcards();
+  const { stats: flashcardStats } = useFlashcards();
   const { stats: timelineStats, activities } = useTimeline();
   const { trilhas } = useTrilhas();
 
@@ -71,56 +67,42 @@ const HomeScreen = ({ navigation }: any) => {
             <Text style={styles.logoEmoji}>🧠</Text>
             <Text style={styles.appName}>MindinLine</Text>
           </View>
-          <Pressable style={styles.profileButton}>
-            <Icon name="person-circle-outline" size={32} color={colors.text.secondary} />
-          </Pressable>
+          <IconButton
+            icon="person-circle-outline"
+            variant="ghost"
+            size="medium"
+            onPress={() => {}}
+          />
         </View>
 
         {/* Greeting Header */}
         <View style={styles.header}>
-          <View style={styles.headerLeft}>
+          <View style={styles.headerRow}>
             <Text style={styles.greeting}>{getGreeting()}! 👋</Text>
             <HelpButton content={helpContent['home.welcome'].content} />
-            <Text style={styles.subtitle}>{getMotivationalMessage()}</Text>
           </View>
+          <Text style={styles.subtitle}>{getMotivationalMessage()}</Text>
         </View>
 
         {/* Stats Overview */}
-        <View style={styles.statsRow}>
-          <View style={[styles.statCard, { borderColor: colors.accent.primary }]}>
-            <Icon name="flame-outline" size={24} color={colors.accent.primary} />
-            <Text style={styles.statNumber}>{streak}</Text>
-            <Text style={styles.statLabel}>dias</Text>
-          </View>
-
-          <View style={[styles.statCard, { borderColor: colors.status.success }]}>
-            <Icon name="checkmark-done-outline" size={24} color={colors.status.success} />
-            <Text style={styles.statNumber}>{taskStats.completedTasks}</Text>
-            <Text style={styles.statLabel}>completas</Text>
-          </View>
-
-          <View style={[styles.statCard, { borderColor: colors.status.info }]}>
-            <Icon name="layers-outline" size={24} color={colors.status.info} />
-            <Text style={styles.statNumber}>{flashcardStats.activeDecks}</Text>
-            <Text style={styles.statLabel}>decks</Text>
-          </View>
-
-          <View style={[styles.statCard, { borderColor: colors.status.warning }]}>
-            <Icon name="library-outline" size={24} color={colors.status.warning} />
-            <Text style={styles.statNumber}>{trilhas.length}</Text>
-            <Text style={styles.statLabel}>trilhas</Text>
-          </View>
-        </View>
+        <Card variant="glass" size="small" style={styles.statsCard}>
+          <StatsRow
+            stats={[
+              { icon: 'flame', value: streak, label: 'dias', color: colors.accent.primary },
+              { icon: 'checkmark-done', value: taskStats.completedTasks, label: 'completas', color: colors.status.success },
+              { icon: 'layers', value: flashcardStats.activeDecks, label: 'decks', color: colors.status.info },
+              { icon: 'library', value: trilhas.length, label: 'trilhas', color: colors.status.warning },
+            ]}
+          />
+        </Card>
 
         {/* Quick Actions */}
-        <View style={globalStyles.glassCard}>
+        <Card variant="glass" size="medium">
           <Text style={styles.sectionTitle}>Ações Rápidas</Text>
           <View style={styles.quickActions}>
             <Pressable
               style={styles.quickAction}
-              onPress={() => navigation.navigate('TasksTab', {
-                screen: 'CreateTask',
-              })}
+              onPress={() => navigation.navigate('TasksTab', { screen: 'CreateTask' })}
             >
               <Icon name="add-circle" size={32} color={colors.status.success} />
               <Text style={styles.quickActionText}>Nova Tarefa</Text>
@@ -128,9 +110,7 @@ const HomeScreen = ({ navigation }: any) => {
 
             <Pressable
               style={styles.quickAction}
-              onPress={() => navigation.navigate('FlashcardsTab', {
-                screen: 'CreateDeck',
-              })}
+              onPress={() => navigation.navigate('FlashcardsTab', { screen: 'CreateDeck' })}
             >
               <Icon name="duplicate" size={32} color={colors.status.info} />
               <Text style={styles.quickActionText}>Novo Deck</Text>
@@ -138,9 +118,7 @@ const HomeScreen = ({ navigation }: any) => {
 
             <Pressable
               style={styles.quickAction}
-              onPress={() => navigation.navigate('TrilhasTab', {
-                screen: 'CreateTrilha',
-              })}
+              onPress={() => navigation.navigate('TrilhasTab', { screen: 'CreateTrilha' })}
             >
               <Icon name="map" size={32} color={colors.status.warning} />
               <Text style={styles.quickActionText}>Nova Trilha</Text>
@@ -154,158 +132,67 @@ const HomeScreen = ({ navigation }: any) => {
               <Text style={styles.quickActionText}>Timeline</Text>
             </Pressable>
           </View>
-        </View>
+        </Card>
 
         {/* Module Cards */}
         <Text style={styles.sectionTitle}>Seus Módulos</Text>
 
         {/* Flashcards Module */}
-        <Pressable
-          style={globalStyles.glassCard}
+        <ModuleCard
+          icon="layers-outline"
+          title="Flashcards"
+          subtitle="Repetição espaçada inteligente"
+          stats={[
+            { icon: 'cube', value: flashcardStats.totalDecks, label: 'decks' },
+            { icon: 'albums', value: flashcardStats.totalCards, label: 'cards' },
+            { icon: 'alert-circle', value: flashcardStats.cardsToReviewToday, label: 'revisar', color: colors.status.warning },
+            { icon: 'checkmark-circle', value: flashcardStats.cardsMastered, label: 'dominados', color: colors.status.success },
+          ]}
           onPress={() => navigation.navigate('FlashcardsTab')}
-        >
-          <View style={styles.moduleHeader}>
-            <View style={styles.moduleIcon}>
-              <Icon name="layers-outline" size={28} color={colors.status.info} />
-            </View>
-            <View style={styles.moduleInfo}>
-              <Text style={styles.moduleTitle}>Flashcards</Text>
-              <Text style={styles.moduleSubtitle}>Repetição espaçada inteligente</Text>
-            </View>
-            <Icon name="chevron-forward" size={20} color={colors.text.tertiary} />
-          </View>
-
-          <View style={styles.moduleStats}>
-            <View style={styles.moduleStat}>
-              <Text style={styles.moduleStatNumber}>{flashcardStats.totalDecks}</Text>
-              <Text style={styles.moduleStatLabel}>decks</Text>
-            </View>
-            <View style={styles.moduleStat}>
-              <Text style={styles.moduleStatNumber}>{flashcardStats.totalCards}</Text>
-              <Text style={styles.moduleStatLabel}>cards</Text>
-            </View>
-            <View style={styles.moduleStat}>
-              <Text style={[styles.moduleStatNumber, { color: colors.status.warning }]}>
-                {flashcardStats.cardsToReviewToday}
-              </Text>
-              <Text style={styles.moduleStatLabel}>revisar</Text>
-            </View>
-            <View style={styles.moduleStat}>
-              <Text style={[styles.moduleStatNumber, { color: colors.status.success }]}>
-                {flashcardStats.cardsMastered}
-              </Text>
-              <Text style={styles.moduleStatLabel}>dominados</Text>
-            </View>
-          </View>
-        </Pressable>
+          color={colors.status.info}
+        />
 
         {/* Tasks Module */}
-        <Pressable
-          style={globalStyles.glassCard}
+        <ModuleCard
+          icon="checkmark-circle-outline"
+          title="Tarefas"
+          subtitle="Produtividade com Pomodoro"
+          stats={[
+            { icon: 'list', value: taskStats.totalTasks, label: 'total' },
+            { icon: 'today', value: todayTasks.length, label: 'hoje', color: colors.status.warning },
+            { icon: 'checkmark-done', value: taskStats.completedTasks, label: 'completas', color: colors.status.success },
+            { icon: 'timer', value: taskStats.totalFocusTime, label: 'min foco', color: colors.accent.primary },
+          ]}
           onPress={() => navigation.navigate('TasksTab')}
-        >
-          <View style={styles.moduleHeader}>
-            <View style={styles.moduleIcon}>
-              <Icon name="checkmark-circle-outline" size={28} color={colors.status.success} />
-            </View>
-            <View style={styles.moduleInfo}>
-              <Text style={styles.moduleTitle}>Tarefas</Text>
-              <Text style={styles.moduleSubtitle}>Produtividade com Pomodoro</Text>
-            </View>
-            <Icon name="chevron-forward" size={20} color={colors.text.tertiary} />
-          </View>
-
-          <View style={styles.moduleStats}>
-            <View style={styles.moduleStat}>
-              <Text style={styles.moduleStatNumber}>{taskStats.totalTasks}</Text>
-              <Text style={styles.moduleStatLabel}>total</Text>
-            </View>
-            <View style={styles.moduleStat}>
-              <Text style={[styles.moduleStatNumber, { color: colors.status.warning }]}>
-                {todayTasks.length}
-              </Text>
-              <Text style={styles.moduleStatLabel}>hoje</Text>
-            </View>
-            <View style={styles.moduleStat}>
-              <Text style={[styles.moduleStatNumber, { color: colors.status.success }]}>
-                {taskStats.completedTasks}
-              </Text>
-              <Text style={styles.moduleStatLabel}>completas</Text>
-            </View>
-            <View style={styles.moduleStat}>
-              <Text style={[styles.moduleStatNumber, { color: colors.accent.primary }]}>
-                {taskStats.totalFocusTime}
-              </Text>
-              <Text style={styles.moduleStatLabel}>min foco</Text>
-            </View>
-          </View>
-        </Pressable>
+          color={colors.status.success}
+        />
 
         {/* Trilhas Module */}
-        <Pressable
-          style={globalStyles.glassCard}
+        <ModuleCard
+          icon="library-outline"
+          title="Trilhas de Estudo"
+          subtitle="Roteiros estruturados"
+          stats={[
+            { icon: 'book', value: trilhas.length, label: 'trilhas' },
+            { icon: 'play-circle', value: trilhas.filter(t => t.status === 'active').length, label: 'ativas' },
+            { icon: 'checkmark-circle', value: trilhas.filter(t => t.status === 'completed').length, label: 'completas', color: colors.status.success },
+          ]}
           onPress={() => navigation.navigate('TrilhasTab')}
-        >
-          <View style={styles.moduleHeader}>
-            <View style={styles.moduleIcon}>
-              <Icon name="library-outline" size={28} color={colors.status.warning} />
-            </View>
-            <View style={styles.moduleInfo}>
-              <Text style={styles.moduleTitle}>Trilhas de Estudo</Text>
-              <Text style={styles.moduleSubtitle}>Roteiros estruturados</Text>
-            </View>
-            <Icon name="chevron-forward" size={20} color={colors.text.tertiary} />
-          </View>
-
-          <View style={styles.moduleStats}>
-            <View style={styles.moduleStat}>
-              <Text style={styles.moduleStatNumber}>{trilhas.length}</Text>
-              <Text style={styles.moduleStatLabel}>trilhas</Text>
-            </View>
-            <View style={styles.moduleStat}>
-              <Text style={styles.moduleStatNumber}>
-                {trilhas.filter(t => t.status === 'active').length}
-              </Text>
-              <Text style={styles.moduleStatLabel}>ativas</Text>
-            </View>
-            <View style={styles.moduleStat}>
-              <Text style={[styles.moduleStatNumber, { color: colors.status.success }]}>
-                {trilhas.filter(t => t.status === 'completed').length}
-              </Text>
-              <Text style={styles.moduleStatLabel}>completas</Text>
-            </View>
-          </View>
-        </Pressable>
+          color={colors.status.warning}
+        />
 
         {/* Timeline Module */}
-        <Pressable
-          style={globalStyles.glassCard}
+        <ModuleCard
+          icon="time-outline"
+          title="Timeline"
+          subtitle="Acompanhe seu progresso"
+          stats={[
+            { icon: 'flame', value: streak, label: 'dias', color: colors.accent.primary },
+            { icon: 'git-commit', value: activities.length, label: 'atividades' },
+          ]}
           onPress={() => navigation.navigate('TimelineTab')}
-        >
-          <View style={styles.moduleHeader}>
-            <View style={styles.moduleIcon}>
-              <Icon name="time-outline" size={28} color={colors.accent.secondary} />
-            </View>
-            <View style={styles.moduleInfo}>
-              <Text style={styles.moduleTitle}>Timeline</Text>
-              <Text style={styles.moduleSubtitle}>Acompanhe seu progresso</Text>
-            </View>
-            <Icon name="chevron-forward" size={20} color={colors.text.tertiary} />
-          </View>
-
-          <View style={styles.moduleStats}>
-            <View style={styles.moduleStat}>
-              <Text style={[styles.moduleStatNumber, { color: colors.accent.primary }]}>
-                {streak}
-              </Text>
-              <Text style={styles.moduleStatLabel}>dias</Text>
-            </View>
-            <View style={styles.moduleStat}>
-              <Text style={styles.moduleStatNumber}>{activities.length}</Text>
-              <Text style={styles.moduleStatLabel}>atividades</Text>
-            </View>
-          </View>
-        </Pressable>
+          color={colors.accent.secondary}
+        />
       </ScrollView>
     </View>
   );
@@ -339,16 +226,14 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     letterSpacing: -0.5,
   },
-  profileButton: {
-    padding: spacing.xs,
-  },
   header: {
     marginBottom: spacing.lg,
   },
-  headerLeft: {
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+    marginBottom: spacing.xs,
   },
   greeting: {
     fontSize: typography.fontSize['2xl'],
@@ -359,29 +244,8 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.base,
     color: colors.text.secondary,
   },
-  statsRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
+  statsCard: {
     marginBottom: spacing.lg,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: colors.glass.background,
-    borderRadius: borderRadius.md,
-    borderWidth: 2,
-    padding: spacing.sm,
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-    marginTop: spacing.xs,
-  },
-  statLabel: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
-    marginTop: 2,
   },
   sectionTitle: {
     fontSize: typography.fontSize.lg,
@@ -403,53 +267,6 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     marginTop: spacing.xs,
     textAlign: 'center',
-  },
-  moduleHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  moduleIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: borderRadius.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.md,
-  },
-  moduleInfo: {
-    flex: 1,
-  },
-  moduleTitle: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
-    marginBottom: 2,
-  },
-  moduleSubtitle: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-  },
-  moduleStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.glass.border,
-  },
-  moduleStat: {
-    alignItems: 'center',
-  },
-  moduleStatNumber: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-    marginBottom: 2,
-  },
-  moduleStatLabel: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
   },
 });
 

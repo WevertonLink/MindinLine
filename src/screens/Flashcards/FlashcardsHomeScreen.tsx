@@ -4,13 +4,12 @@ import {
   Text,
   StyleSheet,
   FlatList,
-  Pressable,
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
 import { useFlashcards } from '../../context/FlashcardsContext';
 import DeckCard from '../../components/DeckCard';
+import { Button, Card, SectionHeader } from '../../components';
 import EmptyState from '../../components/EmptyState';
 import SearchBar from '../../components/SearchBar';
 import HelpButton from '../../components/HelpButton';
@@ -19,7 +18,6 @@ import {
   globalStyles,
   colors,
   spacing,
-  borderRadius,
   typography,
 } from '../../theme/globalStyles';
 import { filterDecksBySearch } from '../../features/flashcards/utils';
@@ -68,18 +66,18 @@ const FlashcardsHomeScreen = ({ navigation }: any) => {
 
   const renderListHeader = useCallback(() => (
     <>
-      {/* Header com stats */}
-      <View style={styles.header}>
-        <View style={styles.headerTitleRow}>
-          <Text style={globalStyles.title}>Flashcards</Text>
-          <HelpButton content={helpContent['flashcards.overview'].content} />
-        </View>
-        <Text style={globalStyles.subtitle}>
-          Estude com repetição espaçada inteligente
-        </Text>
+      {/* Header */}
+      <SectionHeader
+        title="Flashcards"
+        subtitle="Estude com repetição espaçada inteligente"
+        icon="layers-outline"
+        helpContent={helpContent['flashcards.overview'].content}
+      />
 
-        {decks.length > 0 && (
-          <View style={styles.statsContainer}>
+      {/* Stats */}
+      {decks.length > 0 && (
+        <Card variant="glass" size="medium" style={styles.statsCard}>
+          <View style={styles.statsRow}>
             <View style={styles.statItem}>
               <View style={styles.statWithHelp}>
                 <Text style={styles.statValue}>{stats.totalDecks}</Text>
@@ -90,6 +88,7 @@ const FlashcardsHomeScreen = ({ navigation }: any) => {
               </View>
               <Text style={styles.statLabel}>Decks</Text>
             </View>
+
             <View style={styles.statItem}>
               <View style={styles.statWithHelp}>
                 <Text style={[styles.statValue, { color: colors.status.warning }]}>
@@ -102,6 +101,7 @@ const FlashcardsHomeScreen = ({ navigation }: any) => {
               </View>
               <Text style={styles.statLabel}>P/ Revisar</Text>
             </View>
+
             <View style={styles.statItem}>
               <View style={styles.statWithHelp}>
                 <Text style={[styles.statValue, { color: colors.status.success }]}>
@@ -115,8 +115,8 @@ const FlashcardsHomeScreen = ({ navigation }: any) => {
               <Text style={styles.statLabel}>Dominados</Text>
             </View>
           </View>
-        )}
-      </View>
+        </Card>
+      )}
 
       {/* Search bar */}
       {decks.length > 0 && (
@@ -149,18 +149,13 @@ const FlashcardsHomeScreen = ({ navigation }: any) => {
   }, [decks.length, searchQuery]);
 
   const renderListFooter = useCallback(() => (
-    <Pressable
-      style={({ pressed }) => [
-        globalStyles.buttonPrimary,
-        pressed && styles.buttonPressed,
-      ]}
+    <Button
+      label="Criar Novo Deck"
+      icon="add"
+      variant="primary"
       onPress={handleCreateDeck}
-    >
-      <Icon name="add" size={24} color={colors.text.primary} />
-      <Text style={[globalStyles.buttonText, { marginLeft: spacing.sm }]}>
-        Criar Novo Deck
-      </Text>
-    </Pressable>
+      fullWidth
+    />
   ), [handleCreateDeck]);
 
   if (loading) {
@@ -195,29 +190,15 @@ const FlashcardsHomeScreen = ({ navigation }: any) => {
 };
 
 const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-  },
   scrollContent: {
     padding: spacing.lg,
   },
-  header: {
+  statsCard: {
     marginBottom: spacing.lg,
   },
-  headerTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  statsContainer: {
+  statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: colors.glass.background,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.glass.border,
-    padding: spacing.md,
-    marginTop: spacing.md,
   },
   statItem: {
     alignItems: 'center',
@@ -236,28 +217,6 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: typography.fontSize.xs,
     color: colors.text.tertiary,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.glass.background,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.glass.border,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    marginBottom: spacing.lg,
-    gap: spacing.sm,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: typography.fontSize.base,
-    color: colors.text.primary,
-    paddingVertical: spacing.xs,
-  },
-  buttonPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
   },
 });
 

@@ -13,6 +13,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTasks } from '../../context/TasksContext';
 import TaskCard from '../../components/TaskCard';
+import { Button, Card, Chip, SectionHeader } from '../../components';
 import EmptyState from '../../components/EmptyState';
 import SearchBar from '../../components/SearchBar';
 import HelpButton from '../../components/HelpButton';
@@ -98,18 +99,18 @@ const TasksHomeScreen = ({ navigation }: any) => {
 
   const renderListHeader = useCallback(() => (
     <>
-      {/* Header com stats */}
-      <View style={styles.header}>
-        <View style={styles.headerTitleRow}>
-          <Text style={globalStyles.title}>Tasks</Text>
-          <HelpButton content={helpContent['tasks.overview'].content} />
-        </View>
-        <Text style={globalStyles.subtitle}>
-          Gerencie suas tarefas com foco e produtividade
-        </Text>
+      {/* Header */}
+      <SectionHeader
+        title="Tasks"
+        subtitle="Gerencie suas tarefas com foco e produtividade"
+        icon="checkmark-circle-outline"
+        helpContent={helpContent['tasks.overview'].content}
+      />
 
-        {tasks.length > 0 && (
-          <View style={styles.statsContainer}>
+      {/* Stats */}
+      {tasks.length > 0 && (
+        <Card variant="glass" size="medium" style={styles.statsCard}>
+          <View style={styles.statsRow}>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{stats.todoTasks}</Text>
               <Text style={styles.statLabel}>A Fazer</Text>
@@ -133,8 +134,8 @@ const TasksHomeScreen = ({ navigation }: any) => {
               <Text style={styles.statLabel}>Atrasadas</Text>
             </View>
           </View>
-        )}
-      </View>
+        </Card>
+      )}
 
       {/* Search bar */}
       {tasks.length > 0 && (
@@ -145,37 +146,27 @@ const TasksHomeScreen = ({ navigation }: any) => {
         />
       )}
 
-      {/* Filter tabs */}
+      {/* Filter chips */}
       {tasks.length > 0 && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={styles.filterTabs}
-          contentContainerStyle={styles.filterTabsContent}
+          style={styles.filterChips}
+          contentContainerStyle={styles.filterChipsContent}
         >
           {[
-            { key: 'all', label: 'Todas', count: tasks.length },
-            { key: 'todo', label: 'A Fazer', count: stats.todoTasks },
-            { key: 'in_progress', label: 'Em Progresso', count: stats.inProgressTasks },
-            { key: 'completed', label: 'Concluídas', count: stats.completedTasks },
+            { key: 'all', label: `Todas (${tasks.length})` },
+            { key: 'todo', label: `A Fazer (${stats.todoTasks})` },
+            { key: 'in_progress', label: `Em Progresso (${stats.inProgressTasks})` },
+            { key: 'completed', label: `Concluídas (${stats.completedTasks})` },
           ].map(filter => (
-            <Pressable
+            <Chip
               key={filter.key}
-              style={[
-                styles.filterTab,
-                filterStatus === filter.key && styles.filterTabActive,
-              ]}
+              label={filter.label}
+              variant="primary"
+              selected={filterStatus === filter.key}
               onPress={() => setFilterStatus(filter.key as TaskStatus | 'all')}
-            >
-              <Text
-                style={[
-                  styles.filterTabText,
-                  filterStatus === filter.key && styles.filterTabTextActive,
-                ]}
-              >
-                {filter.label} ({filter.count})
-              </Text>
-            </Pressable>
+            />
           ))}
         </ScrollView>
       )}
@@ -226,18 +217,13 @@ const TasksHomeScreen = ({ navigation }: any) => {
     <>
       {/* Botão de adicionar rápido */}
       {!showQuickAdd && (
-        <Pressable
-          style={({ pressed }) => [
-            globalStyles.buttonSecondary,
-            pressed && styles.buttonPressed,
-          ]}
+        <Button
+          label="Adicionar Rápido"
+          icon="flash"
+          variant="secondary"
           onPress={() => setShowQuickAdd(true)}
-        >
-          <Icon name="flash" size={20} color={colors.text.primary} />
-          <Text style={[globalStyles.buttonText, { marginLeft: spacing.sm }]}>
-            Adicionar Rápido
-          </Text>
-        </Pressable>
+          fullWidth
+        />
       )}
     </>
   ), [showQuickAdd]);
@@ -282,30 +268,16 @@ const TasksHomeScreen = ({ navigation }: any) => {
 };
 
 const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-  },
   scrollContent: {
     padding: spacing.lg,
     paddingBottom: 100,
   },
-  header: {
+  statsCard: {
     marginBottom: spacing.lg,
   },
-  headerTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  statsContainer: {
+  statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: colors.glass.background,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.glass.border,
-    padding: spacing.md,
-    marginTop: spacing.md,
   },
   statItem: {
     alignItems: 'center',
@@ -320,50 +292,11 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.xs,
     color: colors.text.tertiary,
   },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.glass.background,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.glass.border,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    marginBottom: spacing.md,
-    gap: spacing.sm,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: typography.fontSize.base,
-    color: colors.text.primary,
-    paddingVertical: spacing.xs,
-  },
-  filterTabs: {
+  filterChips: {
     marginBottom: spacing.lg,
   },
-  filterTabsContent: {
+  filterChipsContent: {
     gap: spacing.sm,
-  },
-  filterTab: {
-    backgroundColor: colors.glass.background,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.glass.border,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.base,
-  },
-  filterTabActive: {
-    backgroundColor: colors.accent.primary,
-    borderColor: colors.accent.primary,
-  },
-  filterTabText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.secondary,
-    fontWeight: typography.fontWeight.medium,
-  },
-  filterTabTextActive: {
-    color: colors.text.primary,
-    fontWeight: typography.fontWeight.semibold,
   },
   quickAddContainer: {
     flexDirection: 'row',
@@ -385,10 +318,6 @@ const styles = StyleSheet.create({
   },
   quickAddButton: {
     padding: spacing.xs,
-  },
-  buttonPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
   },
   fab: {
     position: 'absolute',

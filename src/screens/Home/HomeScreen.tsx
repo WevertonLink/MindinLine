@@ -12,7 +12,7 @@ import { useTasks } from '../../context/TasksContext';
 import { useFlashcards } from '../../context/FlashcardsContext';
 import { useTimeline } from '../../context/TimelineContext';
 import { useTrilhas } from '../../context/TrilhasContext';
-import { ModuleCard, Card, StatsRow, IconButton, InsightCard } from '../../components';
+import { ModuleCard, Card, StatsRow, InsightCard } from '../../components';
 import HelpButton from '../../components/HelpButton';
 import { helpContent } from '../../data/helpContent';
 import { generateInsights } from '../../utils/insights';
@@ -86,18 +86,10 @@ const HomeScreen = ({ navigation }: any) => {
       >
         {/* Logo + Branding Header */}
         <View style={styles.brandingHeader}>
-          <View style={styles.logoContainer}>
-            <Image
-              source={require('../../assets/images/logo.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-          </View>
-          <IconButton
-            icon="person-circle-outline"
-            variant="ghost"
-            size="medium"
-            onPress={() => {}}
+          <Image
+            source={require('../../assets/images/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
           />
         </View>
 
@@ -243,19 +235,13 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl * 2,
   },
   brandingHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.xl,
-    paddingTop: spacing.sm,
-  },
-  logoContainer: {
-    flex: 1,
-    alignItems: 'flex-start',
+    marginBottom: spacing.md,
+    paddingVertical: spacing.sm,
   },
   logo: {
-    width: 200,
-    height: 60,
+    width: 180,
+    height: 54,
   },
   header: {
     marginBottom: spacing.lg,

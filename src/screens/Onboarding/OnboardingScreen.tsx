@@ -30,7 +30,7 @@ interface OnboardingStep {
 const onboardingSteps: OnboardingStep[] = [
   {
     id: '1',
-    icon: 'brain-outline',
+    icon: 'rocket-outline',
     iconColor: colors.accent.primary,
     title: 'Bem-vindo ao MindinLine',
     description: 'Seu assistente cognitivo para organizar estudos, tarefas e maximizar sua produtividade.',

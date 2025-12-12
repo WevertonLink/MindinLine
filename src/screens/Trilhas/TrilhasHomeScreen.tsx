@@ -13,6 +13,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useTrilhas } from '../../context/TrilhasContext';
 import TrilhaCard from '../../components/TrilhaCard';
 import EmptyState from '../../components/EmptyState';
+import HelpButton from '../../components/HelpButton';
+import { helpContent } from '../../data/helpContent';
 import {
   globalStyles,
   colors,
@@ -81,7 +83,10 @@ const TrilhasHomeScreen = ({ navigation }: any) => {
       >
         {/* Header com stats */}
         <View style={styles.header}>
-          <Text style={globalStyles.title}>Trilhas de Estudo</Text>
+          <View style={styles.headerTitleRow}>
+            <Text style={globalStyles.title}>Trilhas de Estudo</Text>
+            <HelpButton content={helpContent['trilhas.overview'].content} />
+          </View>
           <Text style={globalStyles.subtitle}>
             Organize seu aprendizado em roteiros estruturados
           </Text>
@@ -177,6 +182,11 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: spacing.lg,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   statsContainer: {
     flexDirection: 'row',

@@ -13,6 +13,8 @@ import { useTimeline } from '../../context/TimelineContext';
 import { useFlashcards } from '../../context/FlashcardsContext';
 import ActivityCard from '../../components/ActivityCard';
 import EmptyState from '../../components/EmptyState';
+import HelpButton from '../../components/HelpButton';
+import { helpContent } from '../../data/helpContent';
 import {
   globalStyles,
   colors,
@@ -105,7 +107,10 @@ const TimelineScreen = ({ navigation }: any) => {
     <>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={globalStyles.title}>Timeline</Text>
+        <View style={styles.headerTitleRow}>
+          <Text style={globalStyles.title}>Timeline</Text>
+          <HelpButton content={helpContent['timeline.overview'].content} />
+        </View>
         <Text style={globalStyles.subtitle}>
           Acompanhe sua evolução cognitiva
         </Text>
@@ -139,7 +144,13 @@ const TimelineScreen = ({ navigation }: any) => {
         <View style={styles.statsGrid}>
           {/* Streak Atual */}
           <View style={[styles.statCard, styles.statCardPrimary]}>
-            <Icon name="flame" size={28} color={colors.accent.primary} />
+            <View style={styles.statIconRow}>
+              <Icon name="flame" size={28} color={colors.accent.primary} />
+              <HelpButton
+                content={helpContent['timeline.stat.streak'].content}
+                size={16}
+              />
+            </View>
             <Text style={styles.statValue}>{stats.currentStreak}</Text>
             <Text style={styles.statLabel}>
               {stats.currentStreak === 1 ? 'dia seguido' : 'dias seguidos'}
@@ -148,21 +159,39 @@ const TimelineScreen = ({ navigation }: any) => {
 
           {/* Atividades esta semana */}
           <View style={styles.statCard}>
-            <Icon name="calendar" size={24} color={colors.status.info} />
+            <View style={styles.statIconRow}>
+              <Icon name="calendar" size={24} color={colors.status.info} />
+              <HelpButton
+                content={helpContent['timeline.stat.week'].content}
+                size={16}
+              />
+            </View>
             <Text style={styles.statValue}>{stats.thisWeekActivities}</Text>
             <Text style={styles.statLabel}>esta semana</Text>
           </View>
 
           {/* Tempo de foco esta semana */}
           <View style={styles.statCard}>
-            <Icon name="timer" size={24} color={colors.status.success} />
+            <View style={styles.statIconRow}>
+              <Icon name="timer" size={24} color={colors.status.success} />
+              <HelpButton
+                content={helpContent['timeline.stat.focus'].content}
+                size={16}
+              />
+            </View>
             <Text style={styles.statValue}>{stats.thisWeekFocusTime}</Text>
             <Text style={styles.statLabel}>min de foco</Text>
           </View>
 
           {/* Maior streak */}
           <View style={styles.statCard}>
-            <Icon name="trophy" size={24} color={colors.status.warning} />
+            <View style={styles.statIconRow}>
+              <Icon name="trophy" size={24} color={colors.status.warning} />
+              <HelpButton
+                content={helpContent['timeline.stat.record'].content}
+                size={16}
+              />
+            </View>
             <Text style={styles.statValue}>{stats.longestStreak}</Text>
             <Text style={styles.statLabel}>recorde</Text>
           </View>
@@ -288,6 +317,11 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: spacing.lg,
   },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
   reviewWidget: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -340,6 +374,11 @@ const styles = StyleSheet.create({
   statCardPrimary: {
     backgroundColor: 'rgba(99, 102, 241, 0.1)',
     borderColor: 'rgba(99, 102, 241, 0.3)',
+  },
+  statIconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   statValue: {
     fontSize: typography.fontSize['3xl'],

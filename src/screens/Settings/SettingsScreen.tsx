@@ -13,6 +13,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { pick, types as DocumentPickerTypes } from '@react-native-documents/picker';
 import RNFS from 'react-native-fs';
 import { useSettings } from '../../context/SettingsContext';
+import HelpButton from '../../components/HelpButton';
+import { helpContent } from '../../data/helpContent';
 import {
   globalStyles,
   colors,
@@ -343,7 +345,10 @@ const SettingsScreen = ({ navigation }: any) => {
 
         {/* Dados */}
         <View style={globalStyles.glassCard}>
-          <Text style={styles.sectionTitle}>Dados</Text>
+          <View style={styles.sectionTitleRow}>
+            <Text style={styles.sectionTitle}>Dados</Text>
+            <HelpButton content={helpContent['settings.export'].content} size={18} />
+          </View>
 
           <Pressable
             style={styles.settingRow}
@@ -428,6 +433,12 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
     color: colors.text.secondary,
+    marginBottom: spacing.md,
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
     marginBottom: spacing.md,
   },
   statsGrid: {

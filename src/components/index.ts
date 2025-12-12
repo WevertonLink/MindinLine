@@ -19,7 +19,8 @@ export { default as EmptyState } from './EmptyState';
 export { default as Tooltip } from './Tooltip';
 export { default as HelpButton } from './HelpButton';
 export { default as ActivityCard } from './ActivityCard';
-export { default as Toast, ToastContainer } from './Toast';
+export { default as Toast } from './Toast';
+export { ToastContainer } from './Toast';
 export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as InsightCard } from './InsightCard';
 

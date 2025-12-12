@@ -23,6 +23,23 @@ const Toast: React.FC<ToastProps> = ({ toast, onHide }) => {
   const translateY = useRef(new Animated.Value(-100)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
+  const handleHide = () => {
+    Animated.parallel([
+      Animated.timing(translateY, {
+        toValue: -100,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      onHide(toast.id);
+    });
+  };
+
   useEffect(() => {
     // Slide in animation
     Animated.parallel([
@@ -44,24 +61,8 @@ const Toast: React.FC<ToastProps> = ({ toast, onHide }) => {
     }, toast.duration || 3000);
 
     return () => clearTimeout(hideTimer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const handleHide = () => {
-    Animated.parallel([
-      Animated.timing(translateY, {
-        toValue: -100,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      onHide(toast.id);
-    });
-  };
 
   const getToastStyle = (type: ToastType) => {
     switch (type) {

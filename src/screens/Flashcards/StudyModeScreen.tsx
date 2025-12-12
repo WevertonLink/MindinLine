@@ -213,7 +213,7 @@ const StudyModeScreen = ({ route, navigation }: any) => {
       {/* Card Container */}
       <View style={styles.cardContainer}>
         <Pressable onPress={handleFlip} style={styles.cardPressable}>
-          {/* Frente */}
+          {/* Pergunta */}
           <Animated.View
             style={[
               styles.card,
@@ -224,7 +224,7 @@ const StudyModeScreen = ({ route, navigation }: any) => {
               },
             ]}
           >
-            <Text style={styles.cardLabel}>FRENTE</Text>
+            <Text style={[styles.cardLabel, styles.cardLabelQuestion]}>PERGUNTA</Text>
             <Text style={styles.cardText}>{currentCard?.front || 'Sem conteúdo'}</Text>
             <View style={styles.flipHint}>
               <Icon name="sync-outline" size={20} color={colors.text.tertiary} />
@@ -232,7 +232,7 @@ const StudyModeScreen = ({ route, navigation }: any) => {
             </View>
           </Animated.View>
 
-          {/* Verso */}
+          {/* Resposta */}
           <Animated.View
             style={[
               styles.card,
@@ -243,7 +243,7 @@ const StudyModeScreen = ({ route, navigation }: any) => {
               },
             ]}
           >
-            <Text style={styles.cardLabel}>VERSO</Text>
+            <Text style={[styles.cardLabel, styles.cardLabelAnswer]}>RESPOSTA</Text>
             <Text style={styles.cardText}>{currentCard?.back || 'Sem conteúdo'}</Text>
           </Animated.View>
         </Pressable>
@@ -357,21 +357,31 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: colors.glass.background,
     borderRadius: borderRadius.xl,
-    borderWidth: 2,
-    borderColor: colors.accent.primary,
+    borderWidth: 3,
     padding: spacing.xl,
     justifyContent: 'center',
     alignItems: 'center',
     backfaceVisibility: 'hidden',
   },
-  cardFront: {},
-  cardBack: {},
+  cardFront: {
+    borderColor: colors.accent.primary,
+    backgroundColor: 'rgba(99, 102, 241, 0.05)',
+  },
+  cardBack: {
+    borderColor: colors.status.success,
+    backgroundColor: 'rgba(34, 197, 94, 0.05)',
+  },
   cardLabel: {
     fontSize: typography.fontSize.xs,
     fontWeight: typography.fontWeight.bold,
-    color: colors.accent.primary,
     letterSpacing: 1,
     marginBottom: spacing.md,
+  },
+  cardLabelQuestion: {
+    color: colors.accent.primary,
+  },
+  cardLabelAnswer: {
+    color: colors.status.success,
   },
   cardText: {
     fontSize: typography.fontSize['2xl'],

@@ -46,7 +46,7 @@ const AddCardScreen = ({ route, navigation }: any) => {
   const handleAdd = async () => {
     // Validar flashcard
     if (!validateFlashcard(front, back)) {
-      Alert.alert('Erro', 'Preencha a frente e o verso do flashcard');
+      Alert.alert('Erro', 'Preencha a pergunta e a resposta do flashcard');
       return;
     }
 
@@ -92,25 +92,25 @@ const AddCardScreen = ({ route, navigation }: any) => {
 
         {/* Preview Card (visual) */}
         <View style={styles.previewCard}>
-          <View style={styles.previewSide}>
-            <Text style={styles.previewLabel}>FRENTE</Text>
+          <View style={[styles.previewSide, styles.previewQuestion]}>
+            <Text style={[styles.previewLabel, styles.previewLabelQuestion]}>PERGUNTA</Text>
             <Text style={styles.previewText} numberOfLines={3}>
               {front || 'Pergunta / Termo'}
             </Text>
           </View>
-          <Icon name="swap-horizontal" size={24} color={colors.accent.primary} />
-          <View style={styles.previewSide}>
-            <Text style={styles.previewLabel}>VERSO</Text>
+          <Icon name="swap-horizontal" size={24} color={colors.text.tertiary} />
+          <View style={[styles.previewSide, styles.previewAnswer]}>
+            <Text style={[styles.previewLabel, styles.previewLabelAnswer]}>RESPOSTA</Text>
             <Text style={styles.previewText} numberOfLines={3}>
               {back || 'Resposta / Definição'}
             </Text>
           </View>
         </View>
 
-        {/* Frente */}
+        {/* Pergunta */}
         <View style={styles.section}>
           <Text style={styles.label}>
-            Frente (Pergunta) <Text style={styles.required}>*</Text>
+            Pergunta <Text style={styles.required}>*</Text>
           </Text>
           <TextInput
             style={[styles.input, styles.textArea]}
@@ -126,10 +126,10 @@ const AddCardScreen = ({ route, navigation }: any) => {
           <Text style={styles.helperText}>{front.length}/500 caracteres</Text>
         </View>
 
-        {/* Verso */}
+        {/* Resposta */}
         <View style={styles.section}>
           <Text style={styles.label}>
-            Verso (Resposta) <Text style={styles.required}>*</Text>
+            Resposta <Text style={styles.required}>*</Text>
           </Text>
           <TextInput
             style={[styles.input, styles.textArea]}
@@ -221,13 +221,29 @@ const styles = StyleSheet.create({
   },
   previewSide: {
     flex: 1,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 2,
+  },
+  previewQuestion: {
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    borderColor: colors.accent.primary,
+  },
+  previewAnswer: {
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+    borderColor: colors.status.success,
   },
   previewLabel: {
     fontSize: typography.fontSize.xs,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.accent.primary,
     marginBottom: spacing.xs,
     letterSpacing: 0.5,
+  },
+  previewLabelQuestion: {
+    color: colors.accent.primary,
+  },
+  previewLabelAnswer: {
+    color: colors.status.success,
   },
   previewText: {
     fontSize: typography.fontSize.sm,

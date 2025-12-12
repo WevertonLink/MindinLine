@@ -1,21 +1,21 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { FlowStep } from '../features/flowkeeper/types';
+import { Etapa } from '../features/trilhas/types';
 import {
   colors,
   spacing,
   borderRadius,
   typography,
 } from '../theme/globalStyles';
-import { formatTime } from '../features/flowkeeper/utils';
+import { formatTime } from '../features/trilhas/utils';
 
 // ==========================================
 // ✅ STEP ITEM COMPONENT
 // ==========================================
 
 interface StepItemProps {
-  step: FlowStep;
+  step: Etapa;
   onPress?: () => void;
   onToggle: () => void;
   showOrder?: boolean;

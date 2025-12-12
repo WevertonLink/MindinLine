@@ -386,7 +386,7 @@ export const FlashcardsProvider: React.FC<FlashcardsProviderProps> = ({ children
       metadata: {
         deckId: newDeck.id,
         deckTitle: newDeck.title,
-        flowId,
+        trilhaId,
       },
     });
 

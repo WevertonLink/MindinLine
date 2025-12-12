@@ -73,13 +73,15 @@ const SettingsScreen = ({ navigation }: any) => {
         copyTo: 'cachesDirectory',
       });
 
-      if (!result || !result.uri) {
+      if (!result || result.length === 0) {
         setImporting(false);
         return;
       }
 
-      // Verificar se tem fileCopyUri (arquivo copiado para cache)
-      const fileUri = result.fileCopyUri || result.uri;
+      const [file] = result;
+
+      // Usar URI do arquivo diretamente
+      const fileUri = file.uri;
 
       // Ler conteúdo do arquivo
       const fileContent = await RNFS.readFile(fileUri, 'utf8');
@@ -215,8 +217,8 @@ const SettingsScreen = ({ navigation }: any) => {
                 <Text style={styles.statLabel}>dias usando</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{usageStats.totalFlows}</Text>
-                <Text style={styles.statLabel}>flows</Text>
+                <Text style={styles.statValue}>{usageStats.totalTrilhas}</Text>
+                <Text style={styles.statLabel}>trilhas</Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={styles.statValue}>{usageStats.totalDecks}</Text>

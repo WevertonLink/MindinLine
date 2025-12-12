@@ -1,10 +1,10 @@
-import { Flow } from '../features/flowkeeper/types';
+import { Trilha } from '../features/trilhas/types';
 
 // ==========================================
 // 🧪 DADOS MOCKADOS PARA TESTE
 // ==========================================
 
-export const mockFlows: Flow[] = [
+export const mockTrilhas: Trilha[] = [
   {
     id: 'flow-1',
     title: 'Aprender React Native',
@@ -145,4 +145,4 @@ export const mockFlows: Flow[] = [
   },
 ];
 
-export default mockFlows;
+export default mockTrilhas;

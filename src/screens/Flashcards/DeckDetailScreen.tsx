@@ -168,7 +168,7 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
       });
 
       // 2. Fazer cópia local explicitamente
-      const [localCopy] = await keepLocalCopy({
+      const localCopyResult = await keepLocalCopy({
         files: [{
           uri: file.uri,
           fileName: file.name || 'imported-deck.json',
@@ -177,7 +177,11 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
       });
 
       // 3. Ler da cópia local
-      const fileContent = await RNFS.readFile(localCopy.localUri, 'utf8');
+      const localCopy = localCopyResult[0];
+      if (localCopy.status === 'error') {
+        throw new Error(localCopy.copyError || 'Erro ao fazer cópia local');
+      }
+      const fileContent = await RNFS.readFile(localCopy.sourceUri, 'utf8');
 
       // 4. Validar estrutura antes de importar
       const data = JSON.parse(fileContent);
@@ -298,7 +302,7 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
               disabled={exporting}
             >
               <Icon name="download-outline" size={18} color={colors.text.secondary} />
-              <Text style={[globalStyles.buttonTextSecondary, { marginLeft: spacing.xs }]}>
+              <Text style={[globalStyles.buttonText, { marginLeft: spacing.xs }]}>
                 {exporting ? 'Exportando...' : 'Exportar'}
               </Text>
             </Pressable>
@@ -309,7 +313,7 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
               disabled={importing}
             >
               <Icon name="cloud-upload-outline" size={18} color={colors.text.secondary} />
-              <Text style={[globalStyles.buttonTextSecondary, { marginLeft: spacing.xs }]}>
+              <Text style={[globalStyles.buttonText, { marginLeft: spacing.xs }]}>
                 {importing ? 'Importando...' : 'Importar'}
               </Text>
             </Pressable>
@@ -319,7 +323,7 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
               onPress={handleDeleteDeck}
             >
               <Icon name="trash-outline" size={18} color={colors.status.error} />
-              <Text style={[globalStyles.buttonTextSecondary, { marginLeft: spacing.xs, color: colors.status.error }]}>
+              <Text style={[globalStyles.buttonText, { marginLeft: spacing.xs, color: colors.status.error }]}>
                 Deletar
               </Text>
             </Pressable>
@@ -511,6 +515,23 @@ const styles = StyleSheet.create({
   deleteCardButton: {
     padding: spacing.sm,
     marginLeft: spacing.sm,
+  },
+  deleteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+    padding: spacing.md,
+    marginTop: spacing.xl,
+  },
+  deleteButtonText: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.status.error,
   },
 });
 

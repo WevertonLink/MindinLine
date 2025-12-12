@@ -12,6 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { pick, types as DocumentPickerTypes } from '@react-native-documents/picker';
 import RNFS from 'react-native-fs';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSettings } from '../../context/SettingsContext';
 import { Card, Divider, SectionHeader } from '../../components';
 import HelpButton from '../../components/HelpButton';
@@ -177,6 +178,27 @@ const SettingsScreen = ({ navigation }: any) => {
               Alert.alert('Sucesso', 'Configurações resetadas!');
             } catch (error) {
               Alert.alert('Erro', 'Não foi possível resetar as configurações');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleResetOnboarding = async () => {
+    Alert.alert(
+      'Resetar Onboarding',
+      'Isso fará o tutorial de boas-vindas aparecer novamente na próxima vez que você abrir o app.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Resetar',
+          onPress: async () => {
+            try {
+              await AsyncStorage.removeItem('@mindinline:onboarding_completed');
+              Alert.alert('Sucesso', 'O onboarding será exibido novamente ao reiniciar o app.');
+            } catch (error) {
+              Alert.alert('Erro', 'Não foi possível resetar o onboarding');
             }
           },
         },
@@ -384,6 +406,17 @@ const SettingsScreen = ({ navigation }: any) => {
               <Icon name="refresh-outline" size={20} color={colors.status.warning} />
               <Text style={[styles.settingLabel, { color: colors.status.warning }]}>
                 Resetar Configurações
+              </Text>
+            </View>
+          </Pressable>
+
+          <View style={globalStyles.divider} />
+
+          <Pressable style={styles.settingRow} onPress={handleResetOnboarding}>
+            <View style={styles.settingLeft}>
+              <Icon name="rocket-outline" size={20} color={colors.status.info} />
+              <Text style={[styles.settingLabel, { color: colors.status.info }]}>
+                Resetar Onboarding
               </Text>
             </View>
           </Pressable>

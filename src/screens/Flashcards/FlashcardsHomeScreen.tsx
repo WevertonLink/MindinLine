@@ -14,6 +14,7 @@ import EmptyState from '../../components/EmptyState';
 import SearchBar from '../../components/SearchBar';
 import HelpButton from '../../components/HelpButton';
 import { helpContent } from '../../data/helpContent';
+import { errorMessages, confirmMessages } from '../../utils/messages';
 import {
   globalStyles,
   colors,
@@ -37,20 +38,29 @@ const FlashcardsHomeScreen = ({ navigation }: any) => {
   }, [navigation]);
 
   const handleDeleteDeck = useCallback((deckId: string, deckTitle: string) => {
-    Alert.alert('Deletar Deck', `Tem certeza que deseja deletar "${deckTitle}"?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Deletar',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteDeck(deckId);
-          } catch (error) {
-            Alert.alert('Erro', 'Não foi possível deletar o deck');
-          }
+    const deleteConfirm = confirmMessages.delete.deck(deckTitle);
+
+    Alert.alert(
+      deleteConfirm.title,
+      deleteConfirm.message,
+      [
+        { text: deleteConfirm.cancelText, style: 'cancel' },
+        {
+          text: deleteConfirm.confirmText,
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteDeck(deckId);
+            } catch (error) {
+              Alert.alert(
+                errorMessages.flashcards.deleteDeck.title,
+                errorMessages.flashcards.deleteDeck.message
+              );
+            }
+          },
         },
-      },
-    ]);
+      ]
+    );
   }, [deleteDeck]);
 
   // FlatList render functions
@@ -136,17 +146,36 @@ const FlashcardsHomeScreen = ({ navigation }: any) => {
           icon="search-outline"
           title="Nenhum resultado"
           message={`Não encontramos decks com "${searchQuery}"`}
+          action={{
+            label: 'Limpar Busca',
+            onPress: () => setSearchQuery(''),
+            variant: 'secondary',
+          }}
         />
       );
     }
     return (
       <EmptyState
         icon="layers-outline"
-        title="Nenhum deck criado"
-        message="Crie seu primeiro deck de flashcards para começar a memorizar conceitos usando repetição espaçada"
+        title="Comece sua jornada de aprendizado"
+        message="Flashcards são perfeitos para memorizar idiomas, conceitos técnicos, fórmulas e muito mais."
+        action={{
+          label: 'Criar Primeiro Deck',
+          onPress: handleCreateDeck,
+          variant: 'primary',
+        }}
+        suggestions={[
+          'Inglês - Vocabulário',
+          'Programação - JavaScript',
+          'Estudos - História',
+        ]}
+        onSuggestionPress={(suggestion) => {
+          // Futuramente pode criar deck com template
+          handleCreateDeck();
+        }}
       />
     );
-  }, [decks.length, searchQuery]);
+  }, [decks.length, searchQuery, handleCreateDeck]);
 
   const renderListFooter = useCallback(() => (
     <Button

@@ -40,7 +40,7 @@ const onboardingSteps: OnboardingStep[] = [
     icon: 'layers-outline',
     iconColor: colors.status.info,
     title: 'Flashcards Inteligentes',
-    description: 'Memorize conceitos com repetição espaçada. O algoritmo SM-2 otimiza suas revisões automaticamente.',
+    description: 'Memorize conceitos com repetição espaçada. Suas revisões são otimizadas automaticamente para melhor aprendizado.',
   },
   {
     id: '3',

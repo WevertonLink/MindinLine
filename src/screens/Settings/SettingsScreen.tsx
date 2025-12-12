@@ -17,6 +17,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { Card, Divider, SectionHeader } from '../../components';
 import HelpButton from '../../components/HelpButton';
 import { helpContent } from '../../data/helpContent';
+import { errorMessages, successMessages, confirmMessages } from '../../utils/messages';
 import {
   globalStyles,
   colors,
@@ -56,12 +57,15 @@ const SettingsScreen = ({ navigation }: any) => {
       const jsonString = JSON.stringify(data, null, 2);
 
       Alert.alert(
-        'Dados Exportados',
-        `Total de ${data.flows.length} flows, ${data.flashcards.length} decks, ${data.tasks.length} tarefas e ${data.activities.length} atividades.\n\nOs dados estão prontos. Em uma versão futura, você poderá compartilhar este arquivo.`,
+        successMessages.settings.exported.title,
+        successMessages.settings.exported.message,
         [{ text: 'OK' }]
       );
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível exportar os dados');
+      Alert.alert(
+        errorMessages.settings.export.title,
+        errorMessages.settings.export.message
+      );
     } finally {
       setExporting(false);
     }
@@ -103,13 +107,25 @@ const SettingsScreen = ({ navigation }: any) => {
       const activitiesCount = data.activities?.length || 0;
       const exportDate = new Date(data.exportedAt).toLocaleDateString('pt-BR');
 
+      const importConfirm = confirmMessages.import.data({
+        trilhas: flowsCount,
+        decks: decksCount,
+        tasks: tasksCount,
+        activities: activitiesCount,
+        date: exportDate,
+      });
+
       Alert.alert(
-        'Importar Dados',
-        `Isso irá SUBSTITUIR todos os dados atuais.\n\nBackup de: ${exportDate}\n\nConteúdo:\n• ${flowsCount} Trilhas\n• ${decksCount} Decks de Flashcards\n• ${tasksCount} Tarefas\n• ${activitiesCount} Atividades\n\nDeseja continuar?`,
+        importConfirm.title,
+        importConfirm.message,
         [
-          { text: 'Cancelar', style: 'cancel', onPress: () => setImporting(false) },
           {
-            text: 'Importar',
+            text: importConfirm.cancelText,
+            style: 'cancel',
+            onPress: () => setImporting(false)
+          },
+          {
+            text: importConfirm.confirmText,
             style: 'destructive',
             onPress: async () => {
               try {
@@ -117,7 +133,10 @@ const SettingsScreen = ({ navigation }: any) => {
                 // O Alert de sucesso já está no importData do Context
                 setImporting(false);
               } catch (error) {
-                Alert.alert('Erro', 'Não foi possível importar os dados');
+                Alert.alert(
+                  errorMessages.settings.import.title,
+                  errorMessages.settings.import.message
+                );
                 setImporting(false);
               }
             },
@@ -133,29 +152,35 @@ const SettingsScreen = ({ navigation }: any) => {
       }
 
       console.error('Erro ao importar dados:', error);
-      Alert.alert(
-        'Erro',
-        error.message || 'Não foi possível importar os dados. Verifique se o arquivo é válido.'
-      );
+      const errorMsg = error.message?.includes('inválido')
+        ? errorMessages.settings.invalidFile
+        : errorMessages.settings.import;
+
+      Alert.alert(errorMsg.title, errorMsg.message);
       setImporting(false);
     }
   };
 
   const handleClearAllData = () => {
+    const clearConfirm = confirmMessages.delete.allData;
+
     Alert.alert(
-      'Limpar Todos os Dados',
-      'Esta ação irá DELETAR permanentemente todos os seus flows, decks, tarefas e atividades. As configurações serão resetadas. Esta ação NÃO pode ser desfeita!',
+      clearConfirm.title,
+      clearConfirm.message,
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: clearConfirm.cancelText, style: 'cancel' },
         {
-          text: 'Deletar Tudo',
+          text: clearConfirm.confirmText,
           style: 'destructive',
           onPress: async () => {
             try {
               await clearAllData();
               await updateUsageStats();
             } catch (error) {
-              Alert.alert('Erro', 'Não foi possível limpar os dados');
+              Alert.alert(
+                errorMessages.generic.title,
+                errorMessages.generic.message
+              );
             }
           },
         },
@@ -175,9 +200,15 @@ const SettingsScreen = ({ navigation }: any) => {
           onPress: async () => {
             try {
               await resetSettings();
-              Alert.alert('Sucesso', 'Configurações resetadas!');
+              Alert.alert(
+                successMessages.settings.reset.title,
+                successMessages.settings.reset.message
+              );
             } catch (error) {
-              Alert.alert('Erro', 'Não foi possível resetar as configurações');
+              Alert.alert(
+                errorMessages.generic.title,
+                errorMessages.generic.message
+              );
             }
           },
         },
@@ -196,9 +227,15 @@ const SettingsScreen = ({ navigation }: any) => {
           onPress: async () => {
             try {
               await AsyncStorage.removeItem('@mindinline:onboarding_completed');
-              Alert.alert('Sucesso', 'O onboarding será exibido novamente ao reiniciar o app.');
+              Alert.alert(
+                'Sucesso',
+                'O onboarding será exibido novamente ao reiniciar o app.'
+              );
             } catch (error) {
-              Alert.alert('Erro', 'Não foi possível resetar o onboarding');
+              Alert.alert(
+                errorMessages.generic.title,
+                errorMessages.generic.message
+              );
             }
           },
         },

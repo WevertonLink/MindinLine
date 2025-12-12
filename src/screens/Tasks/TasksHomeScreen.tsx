@@ -18,6 +18,7 @@ import EmptyState from '../../components/EmptyState';
 import SearchBar from '../../components/SearchBar';
 import HelpButton from '../../components/HelpButton';
 import { helpContent } from '../../data/helpContent';
+import { errorMessages, confirmMessages } from '../../utils/messages';
 import {
   globalStyles,
   colors,
@@ -50,7 +51,10 @@ const TasksHomeScreen = ({ navigation }: any) => {
   // Quick add task
   const handleQuickAdd = async () => {
     if (quickTaskTitle.trim().length < 3) {
-      Alert.alert('Erro', 'O título deve ter no mínimo 3 caracteres');
+      Alert.alert(
+        errorMessages.validation.emptyTitle.title,
+        errorMessages.validation.emptyTitle.message
+      );
       return;
     }
 
@@ -64,25 +68,37 @@ const TasksHomeScreen = ({ navigation }: any) => {
       setQuickTaskTitle('');
       setShowQuickAdd(false);
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível criar a tarefa');
+      Alert.alert(
+        errorMessages.tasks.create.title,
+        errorMessages.tasks.create.message
+      );
     }
   };
 
   const handleDeleteTask = useCallback((taskId: string, taskTitle: string) => {
-    Alert.alert('Deletar Tarefa', `Tem certeza que deseja deletar "${taskTitle}"?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Deletar',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteTask(taskId);
-          } catch (error) {
-            Alert.alert('Erro', 'Não foi possível deletar a tarefa');
-          }
+    const deleteConfirm = confirmMessages.delete.task(taskTitle);
+
+    Alert.alert(
+      deleteConfirm.title,
+      deleteConfirm.message,
+      [
+        { text: deleteConfirm.cancelText, style: 'cancel' },
+        {
+          text: deleteConfirm.confirmText,
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteTask(taskId);
+            } catch (error) {
+              Alert.alert(
+                errorMessages.tasks.delete.title,
+                errorMessages.tasks.delete.message
+              );
+            }
+          },
         },
-      },
-    ]);
+      ]
+    );
   }, [deleteTask]);
 
   // FlatList render functions
@@ -201,17 +217,36 @@ const TasksHomeScreen = ({ navigation }: any) => {
           icon="search-outline"
           title="Nenhum resultado"
           message={`Não encontramos tarefas com "${searchQuery}"`}
+          action={{
+            label: 'Limpar Busca',
+            onPress: () => setSearchQuery(''),
+            variant: 'secondary',
+          }}
         />
       );
     }
     return (
       <EmptyState
         icon="checkmark-circle-outline"
-        title="Nenhuma tarefa criada"
-        message="Crie sua primeira tarefa para começar a organizar seu dia com foco e produtividade"
+        title="Organize seu dia"
+        message="Tarefas ajudam você a manter o foco e acompanhar o que precisa ser feito."
+        action={{
+          label: 'Criar Primeira Tarefa',
+          onPress: () => navigation.navigate('CreateTask'),
+          variant: 'primary',
+        }}
+        suggestions={[
+          'Revisar flashcards de inglês',
+          'Estudar 1h de programação',
+          'Fazer exercícios de matemática',
+        ]}
+        onSuggestionPress={(suggestion) => {
+          setQuickTaskTitle(suggestion);
+          setShowQuickAdd(true);
+        }}
       />
     );
-  }, [tasks.length, searchQuery]);
+  }, [tasks.length, searchQuery, navigation]);
 
   const renderListFooter = useCallback(() => (
     <>

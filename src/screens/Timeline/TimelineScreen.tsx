@@ -16,6 +16,7 @@ import { Card, Chip, SectionHeader, StatsRow } from '../../components';
 import EmptyState from '../../components/EmptyState';
 import HelpButton from '../../components/HelpButton';
 import { helpContent } from '../../data/helpContent';
+import { errorMessages } from '../../utils/messages';
 import {
   globalStyles,
   colors,
@@ -52,7 +53,10 @@ const TimelineScreen = ({ navigation }: any) => {
             try {
               await deleteActivity(activityId);
             } catch (error) {
-              Alert.alert('Erro', 'Não foi possível deletar a atividade');
+              Alert.alert(
+                errorMessages.generic.title,
+                errorMessages.generic.message
+              );
             }
           },
         },
@@ -237,17 +241,44 @@ const TimelineScreen = ({ navigation }: any) => {
     </>
   ), [flashcardsStats.cardsToReviewToday, stats, filters.timeRange, navigation, setFilters]);
 
-  const renderListEmpty = useCallback(() => (
-    <EmptyState
-      icon="time-outline"
-      title="Nenhuma atividade registrada"
-      message={
-        filters.timeRange === 'today'
-          ? 'Comece estudando, revisando flashcards ou completando tarefas'
-          : 'Altere o filtro para ver atividades de outros períodos'
-      }
-    />
-  ), [filters.timeRange]);
+  const renderListEmpty = useCallback(() => {
+    if (filters.timeRange !== 'all' && stats.totalActivities > 0) {
+      return (
+        <EmptyState
+          icon="calendar-outline"
+          title="Nenhuma atividade neste período"
+          message="Altere o filtro acima para ver atividades de outros períodos."
+          action={{
+            label: 'Ver Tudo',
+            onPress: () => setFilters({ timeRange: 'all' }),
+            variant: 'secondary',
+          }}
+        />
+      );
+    }
+
+    return (
+      <EmptyState
+        icon="time-outline"
+        title="Sua jornada começa agora"
+        message="Suas atividades serão registradas automaticamente enquanto você usa o app."
+        suggestions={[
+          'Criar um deck de flashcards',
+          'Adicionar uma tarefa',
+          'Iniciar uma trilha de estudo',
+        ]}
+        onSuggestionPress={(suggestion) => {
+          if (suggestion.includes('flashcards')) {
+            navigation.navigate('FlashcardsTab', { screen: 'CreateDeck' });
+          } else if (suggestion.includes('tarefa')) {
+            navigation.navigate('TasksTab', { screen: 'CreateTask' });
+          } else {
+            navigation.navigate('TrilhasTab', { screen: 'CreateTrilha' });
+          }
+        }}
+      />
+    );
+  }, [filters.timeRange, stats.totalActivities, navigation, setFilters]);
 
   const renderListFooter = useCallback(() => {
     if (stats.totalActivities === 0) return null;

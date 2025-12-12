@@ -16,11 +16,11 @@ export const helpContent: HelpContent = {
   // ==========================================
   'home.welcome': {
     title: 'Bem-vindo ao MindinLine!',
-    content: `Seu assistente cognitivo para pessoas com TDAH.
+    content: `Seu assistente cognitivo para organizar estudos e tarefas.
 
 🧠 O QUE É:
 App que combina técnicas comprovadas:
-• Flashcards com repetição espaçada (SM-2)
+• Flashcards com repetição espaçada
 • Tarefas com técnica Pomodoro
 • Trilhas de estudo estruturadas
 • Timeline de progresso gamificada
@@ -38,7 +38,7 @@ App que combina técnicas comprovadas:
   // ==========================================
   'flashcards.overview': {
     title: 'Flashcards com Repetição Espaçada',
-    content: `Sistema que mostra cards no momento ideal para memorizar, baseado no algoritmo SM-2.
+    content: `Sistema que mostra cards no momento ideal para memorizar, baseado em ciência de memorização.
 
 📊 ENTENDA AS MÉTRICAS:
 • Novos: Cards não estudados
@@ -150,7 +150,7 @@ Modo Foco: 25min Pomodoro com pausas`,
 • Menos overwhelming
 • Progresso visível
 • Sensação de conquista`,
-    tips: ['Para TDAH: Cada subtarefa = dopamina! 🎉\nQuebre em passos de 5-15 min.'],
+    tips: ['Cada subtarefa concluída = vitória! 🎉\nQuebre em passos de 5-15 min.'],
   },
 
   'tasks.recurrence': {
@@ -187,7 +187,7 @@ COMO FUNCIONA:
 • Beba água
 • Olhe para longe da tela
 • NÃO use celular!`,
-    tips: ['Intervalos curtos mantém cérebro TDAH engajado sem exaustão.'],
+    tips: ['Intervalos curtos mantém você engajado sem exaustão mental.'],
   },
 
   // ==========================================
@@ -233,7 +233,7 @@ Dias consecutivos estudando
 • Combate "síndrome do impostor"
 • Gamifica o aprendizado
 • Mostra padrões de produtividade`,
-    tips: ['Você fez MUITO mais do que imagina! Cérebros TDAH subestimam realizações.'],
+    tips: ['Você fez MUITO mais do que imagina! Tendemos a subestimar nossas realizações.'],
   },
 
   'timeline.stat.streak': {
@@ -262,8 +262,8 @@ Dias consecutivos estudando
   'settings.export': {
     title: 'Backup dos Seus Dados',
     content: `EXPORTAR:
-Salva todos dados em arquivo JSON
-Use para backup ou migrar dispositivos
+Salva todos dados em arquivo de backup
+Use para segurança ou migrar dispositivos
 
 IMPORTAR:
 Restaura dados de backup anterior

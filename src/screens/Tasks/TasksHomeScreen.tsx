@@ -14,6 +14,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useTasks } from '../../context/TasksContext';
 import TaskCard from '../../components/TaskCard';
 import EmptyState from '../../components/EmptyState';
+import SearchBar from '../../components/SearchBar';
 import {
   globalStyles,
   colors,
@@ -132,21 +133,11 @@ const TasksHomeScreen = ({ navigation }: any) => {
 
       {/* Search bar */}
       {tasks.length > 0 && (
-        <View style={styles.searchContainer}>
-          <Icon name="search-outline" size={20} color={colors.text.tertiary} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Buscar tarefas..."
-            placeholderTextColor={colors.text.tertiary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery('')}>
-              <Icon name="close-circle" size={20} color={colors.text.tertiary} />
-            </Pressable>
-          )}
-        </View>
+        <SearchBar
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Buscar tarefas..."
+        />
       )}
 
       {/* Filter tabs */}

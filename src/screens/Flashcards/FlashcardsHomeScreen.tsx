@@ -6,13 +6,13 @@ import {
   FlatList,
   Pressable,
   ActivityIndicator,
-  TextInput,
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useFlashcards } from '../../context/FlashcardsContext';
 import DeckCard from '../../components/DeckCard';
 import EmptyState from '../../components/EmptyState';
+import SearchBar from '../../components/SearchBar';
 import {
   globalStyles,
   colors,
@@ -97,21 +97,11 @@ const FlashcardsHomeScreen = ({ navigation }: any) => {
 
       {/* Search bar */}
       {decks.length > 0 && (
-        <View style={styles.searchContainer}>
-          <Icon name="search-outline" size={20} color={colors.text.tertiary} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Buscar decks..."
-            placeholderTextColor={colors.text.tertiary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery('')}>
-              <Icon name="close-circle" size={20} color={colors.text.tertiary} />
-            </Pressable>
-          )}
-        </View>
+        <SearchBar
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Buscar decks..."
+        />
       )}
     </>
   ), [decks.length, stats, searchQuery]);

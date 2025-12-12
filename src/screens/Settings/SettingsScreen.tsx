@@ -351,7 +351,7 @@ const SettingsScreen = ({ navigation }: any) => {
               <Icon name="lock-closed" size={16} color={colors.text.tertiary} />
             </View>
           </Pressable>
-        </View>
+        </Card>
 
         {/* Configurações por Módulo */}
         <View style={globalStyles.glassCard}>

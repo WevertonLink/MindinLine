@@ -14,7 +14,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTasks } from '../../context/TasksContext';
 import { TaskPriority, TaskCategory, RecurrenceType } from '../../features/tasks/types';
-import { validateTitle, translatePriority, translateCategory } from '../../features/tasks/utils';
+import { validateTitle, translatePriority, translateCategory, parseBrazilianDate } from '../../features/tasks/utils';
 import {
   globalStyles,
   colors,
@@ -53,6 +53,17 @@ const CreateTaskScreen = ({ navigation }: any) => {
       return;
     }
 
+    // Converter data brasileira para ISO
+    let dueDateISO: string | undefined = undefined;
+    if (dueDate) {
+      const parsed = parseBrazilianDate(dueDate);
+      if (!parsed) {
+        Alert.alert('Erro', 'Data inválida. Use o formato DD/MM/AAAA (ex: 31/12/2025)');
+        return;
+      }
+      dueDateISO = parsed;
+    }
+
     try {
       setIsCreating(true);
 
@@ -61,7 +72,7 @@ const CreateTaskScreen = ({ navigation }: any) => {
         description: description.trim() || undefined,
         priority: selectedPriority,
         category: selectedCategory,
-        dueDate: dueDate || undefined,
+        dueDate: dueDateISO,
         estimatedMinutes: estimatedMinutes ? parseInt(estimatedMinutes) : undefined,
         isRecurring,
         recurrence: isRecurring ? {

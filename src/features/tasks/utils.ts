@@ -253,10 +253,41 @@ export const sortTasks = (
 // ==========================================
 
 /**
+ * Converter data DD/MM/AAAA para ISO
+ */
+export const parseBrazilianDate = (dateStr: string): string | null => {
+  const trimmed = dateStr.trim();
+  const match = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+
+  if (!match) return null;
+
+  const day = parseInt(match[1], 10);
+  const month = parseInt(match[2], 10);
+  const year = parseInt(match[3], 10);
+
+  // Validar dia e mês
+  if (day < 1 || day > 31 || month < 1 || month > 12) return null;
+
+  // Criar data (mês é 0-indexed no JS)
+  const date = new Date(year, month - 1, day);
+
+  // Validar se a data é válida (ex: 31/02 é inválida)
+  if (date.getDate() !== day || date.getMonth() !== month - 1 || date.getFullYear() !== year) {
+    return null;
+  }
+
+  return date.toISOString();
+};
+
+/**
  * Formatar data para exibição
  */
 export const formatDate = (isoDate: string): string => {
   const date = new Date(isoDate);
+
+  // Verificar se é uma data válida
+  if (isNaN(date.getTime())) return 'Data inválida';
+
   const day = String(date.getDate()).padStart(2, '0');
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const year = date.getFullYear();
@@ -285,6 +316,10 @@ export const formatRelativeDate = (isoDate: string): string => {
  */
 export const formatDueDate = (dueDate: string): string => {
   const date = new Date(dueDate);
+
+  // Verificar se é uma data válida
+  if (isNaN(date.getTime())) return 'Data inválida';
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   date.setHours(0, 0, 0, 0);

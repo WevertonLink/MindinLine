@@ -13,6 +13,8 @@ import { useFlashcards } from '../../context/FlashcardsContext';
 import DeckCard from '../../components/DeckCard';
 import EmptyState from '../../components/EmptyState';
 import SearchBar from '../../components/SearchBar';
+import HelpButton from '../../components/HelpButton';
+import { helpContent } from '../../data/helpContent';
 import {
   globalStyles,
   colors,
@@ -68,7 +70,10 @@ const FlashcardsHomeScreen = ({ navigation }: any) => {
     <>
       {/* Header com stats */}
       <View style={styles.header}>
-        <Text style={globalStyles.title}>Flashcards</Text>
+        <View style={styles.headerTitleRow}>
+          <Text style={globalStyles.title}>Flashcards</Text>
+          <HelpButton content={helpContent['flashcards.overview'].content} />
+        </View>
         <Text style={globalStyles.subtitle}>
           Estude com repetição espaçada inteligente
         </Text>
@@ -76,19 +81,37 @@ const FlashcardsHomeScreen = ({ navigation }: any) => {
         {decks.length > 0 && (
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{stats.totalDecks}</Text>
+              <View style={styles.statWithHelp}>
+                <Text style={styles.statValue}>{stats.totalDecks}</Text>
+                <HelpButton
+                  content={helpContent['flashcards.stat.total'].content}
+                  size={16}
+                />
+              </View>
               <Text style={styles.statLabel}>Decks</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.status.warning }]}>
-                {stats.cardsToReviewToday}
-              </Text>
+              <View style={styles.statWithHelp}>
+                <Text style={[styles.statValue, { color: colors.status.warning }]}>
+                  {stats.cardsToReviewToday}
+                </Text>
+                <HelpButton
+                  content={helpContent['flashcards.stat.due'].content}
+                  size={16}
+                />
+              </View>
               <Text style={styles.statLabel}>P/ Revisar</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.status.success }]}>
-                {stats.cardsMastered}
-              </Text>
+              <View style={styles.statWithHelp}>
+                <Text style={[styles.statValue, { color: colors.status.success }]}>
+                  {stats.cardsMastered}
+                </Text>
+                <HelpButton
+                  content={helpContent['flashcards.stat.mastered'].content}
+                  size={16}
+                />
+              </View>
               <Text style={styles.statLabel}>Dominados</Text>
             </View>
           </View>
@@ -181,6 +204,11 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: spacing.lg,
   },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -193,6 +221,11 @@ const styles = StyleSheet.create({
   },
   statItem: {
     alignItems: 'center',
+  },
+  statWithHelp: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   statValue: {
     fontSize: typography.fontSize['2xl'],

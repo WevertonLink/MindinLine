@@ -15,6 +15,8 @@ import { useTasks } from '../../context/TasksContext';
 import TaskCard from '../../components/TaskCard';
 import EmptyState from '../../components/EmptyState';
 import SearchBar from '../../components/SearchBar';
+import HelpButton from '../../components/HelpButton';
+import { helpContent } from '../../data/helpContent';
 import {
   globalStyles,
   colors,
@@ -98,7 +100,10 @@ const TasksHomeScreen = ({ navigation }: any) => {
     <>
       {/* Header com stats */}
       <View style={styles.header}>
-        <Text style={globalStyles.title}>Tasks</Text>
+        <View style={styles.headerTitleRow}>
+          <Text style={globalStyles.title}>Tasks</Text>
+          <HelpButton content={helpContent['tasks.overview'].content} />
+        </View>
         <Text style={globalStyles.subtitle}>
           Gerencie suas tarefas com foco e produtividade
         </Text>
@@ -286,6 +291,11 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: spacing.lg,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   statsContainer: {
     flexDirection: 'row',

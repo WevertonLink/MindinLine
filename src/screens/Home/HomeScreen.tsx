@@ -12,6 +12,8 @@ import { useTasks } from '../../context/TasksContext';
 import { useFlashcards } from '../../context/FlashcardsContext';
 import { useTimeline } from '../../context/TimelineContext';
 import { useTrilhas } from '../../context/TrilhasContext';
+import HelpButton from '../../components/HelpButton';
+import { helpContent } from '../../data/helpContent';
 import {
   globalStyles,
   colors,
@@ -76,8 +78,9 @@ const HomeScreen = ({ navigation }: any) => {
 
         {/* Greeting Header */}
         <View style={styles.header}>
-          <View>
+          <View style={styles.headerLeft}>
             <Text style={styles.greeting}>{getGreeting()}! 👋</Text>
+            <HelpButton content={helpContent['home.welcome'].content} />
             <Text style={styles.subtitle}>{getMotivationalMessage()}</Text>
           </View>
         </View>
@@ -342,11 +345,15 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: spacing.lg,
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
   greeting: {
     fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
-    marginBottom: spacing.xs,
   },
   subtitle: {
     fontSize: typography.fontSize.base,

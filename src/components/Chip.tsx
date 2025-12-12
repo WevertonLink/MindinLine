@@ -1,7 +1,8 @@
-import React from 'react';
-import { Pressable, Text, StyleSheet } from 'react-native';
+import React, { useRef } from 'react';
+import { Pressable, Text, StyleSheet, Animated } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors, spacing, borderRadius, typography } from '../theme/globalStyles';
+import { pressIn, pressOut } from '../utils/animations';
 
 export type ChipVariant = 'default' | 'primary' | 'success' | 'warning' | 'error';
 
@@ -24,6 +25,20 @@ const Chip: React.FC<ChipProps> = ({
   onRemove,
   disabled = false,
 }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    if (!disabled && onPress) {
+      pressIn(scaleAnim).start();
+    }
+  };
+
+  const handlePressOut = () => {
+    if (!disabled && onPress) {
+      pressOut(scaleAnim).start();
+    }
+  };
+
   const getIconColor = () => {
     if (selected) {
       return variant === 'default' ? colors.text.primary : colors.text.primary;
@@ -44,18 +59,21 @@ const Chip: React.FC<ChipProps> = ({
   };
 
   return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.chip,
-        styles[`chip_${variant}`],
-        selected && styles.chipSelected,
-        selected && styles[`chipSelected_${variant}`],
-        disabled && styles.chipDisabled,
-        pressed && !disabled && styles.chipPressed,
-      ]}
-      onPress={onPress}
-      disabled={disabled || !onPress}
-    >
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <Pressable
+        style={({ pressed }) => [
+          styles.chip,
+          styles[`chip_${variant}`],
+          selected && styles.chipSelected,
+          selected && styles[`chipSelected_${variant}`],
+          disabled && styles.chipDisabled,
+          pressed && !disabled && styles.chipPressed,
+        ]}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled || !onPress}
+      >
       {icon && (
         <Icon
           name={icon}
@@ -84,6 +102,7 @@ const Chip: React.FC<ChipProps> = ({
         </Pressable>
       )}
     </Pressable>
+    </Animated.View>
   );
 };
 

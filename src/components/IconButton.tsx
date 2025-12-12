@@ -1,7 +1,8 @@
-import React from 'react';
-import { Pressable, StyleSheet, ViewStyle } from 'react-native';
+import React, { useRef } from 'react';
+import { Pressable, StyleSheet, ViewStyle, Animated } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors, spacing, borderRadius } from '../theme/globalStyles';
+import { pressIn, pressOut } from '../utils/animations';
 
 export type IconButtonVariant = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'ghost';
 export type IconButtonSize = 'small' | 'medium' | 'large';
@@ -23,6 +24,20 @@ const IconButton: React.FC<IconButtonProps> = ({
   disabled = false,
   style,
 }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    if (!disabled) {
+      pressIn(scaleAnim).start();
+    }
+  };
+
+  const handlePressOut = () => {
+    if (!disabled) {
+      pressOut(scaleAnim).start();
+    }
+  };
+
   const getIconSize = () => {
     switch (size) {
       case 'small':
@@ -54,21 +69,25 @@ const IconButton: React.FC<IconButtonProps> = ({
   };
 
   return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.button,
-        styles[`button_${variant}`],
-        styles[`button_${size}`],
-        disabled && styles.buttonDisabled,
-        pressed && !disabled && styles.buttonPressed,
-        style,
-      ]}
-      onPress={onPress}
-      disabled={disabled}
-      hitSlop={8}
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <Pressable
+        style={({ pressed }) => [
+          styles.button,
+          styles[`button_${variant}`],
+          styles[`button_${size}`],
+          disabled && styles.buttonDisabled,
+          pressed && !disabled && styles.buttonPressed,
+          style,
+        ]}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled}
+        hitSlop={8}
     >
       <Icon name={icon} size={getIconSize()} color={getIconColor()} />
     </Pressable>
+    </Animated.View>
   );
 };
 

@@ -1,7 +1,8 @@
-import React from 'react';
-import { Pressable, Text, StyleSheet, ActivityIndicator, View } from 'react-native';
+import React, { useRef } from 'react';
+import { Pressable, Text, StyleSheet, ActivityIndicator, View, Animated } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors, spacing, borderRadius, typography } from '../theme/globalStyles';
+import { pressIn, pressOut } from '../utils/animations';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
 export type ButtonSize = 'small' | 'medium' | 'large';
@@ -29,6 +30,20 @@ const Button: React.FC<ButtonProps> = ({
   loading = false,
   fullWidth = false,
 }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    if (!disabled && !loading) {
+      pressIn(scaleAnim).start();
+    }
+  };
+
+  const handlePressOut = () => {
+    if (!disabled && !loading) {
+      pressOut(scaleAnim).start();
+    }
+  };
+
   const getButtonStyle = () => {
     const baseStyle = [styles.button, styles[`button_${size}`]];
 
@@ -90,31 +105,35 @@ const Button: React.FC<ButtonProps> = ({
   };
 
   return (
-    <Pressable
-      style={({ pressed }) => [
-        ...getButtonStyle(),
-        pressed && !disabled && !loading && styles.buttonPressed,
-      ]}
-      onPress={onPress}
-      disabled={disabled || loading}
-    >
-      {loading ? (
-        <ActivityIndicator
-          size="small"
-          color={variant === 'outline' || variant === 'ghost' ? colors.accent.primary : colors.text.primary}
-        />
-      ) : (
-        <View style={styles.content}>
-          {icon && iconPosition === 'left' && (
-            <Icon name={icon} size={getIconSize()} color={getIconColor()} />
-          )}
-          <Text style={getTextStyle()}>{label}</Text>
-          {icon && iconPosition === 'right' && (
-            <Icon name={icon} size={getIconSize()} color={getIconColor()} />
-          )}
-        </View>
-      )}
-    </Pressable>
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <Pressable
+        style={({ pressed }) => [
+          ...getButtonStyle(),
+          pressed && !disabled && !loading && styles.buttonPressed,
+        ]}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled || loading}
+      >
+        {loading ? (
+          <ActivityIndicator
+            size="small"
+            color={variant === 'outline' || variant === 'ghost' ? colors.accent.primary : colors.text.primary}
+          />
+        ) : (
+          <View style={styles.content}>
+            {icon && iconPosition === 'left' && (
+              <Icon name={icon} size={getIconSize()} color={getIconColor()} />
+            )}
+            <Text style={getTextStyle()}>{label}</Text>
+            {icon && iconPosition === 'right' && (
+              <Icon name={icon} size={getIconSize()} color={getIconColor()} />
+            )}
+          </View>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 };
 

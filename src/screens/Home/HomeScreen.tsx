@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   Pressable,
+  Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTasks } from '../../context/TasksContext';
@@ -86,8 +87,11 @@ const HomeScreen = ({ navigation }: any) => {
         {/* Logo + Branding Header */}
         <View style={styles.brandingHeader}>
           <View style={styles.logoContainer}>
-            <Text style={styles.logoEmoji}>🧠</Text>
-            <Text style={styles.appName}>MindinLine</Text>
+            <Image
+              source={require('../../assets/images/logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
           </View>
           <IconButton
             icon="person-circle-outline"
@@ -242,21 +246,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
+    paddingTop: spacing.sm,
   },
   logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
+    flex: 1,
+    alignItems: 'flex-start',
   },
-  logoEmoji: {
-    fontSize: 40,
-  },
-  appName: {
-    fontSize: typography.fontSize['2xl'],
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-    letterSpacing: -0.5,
+  logo: {
+    width: 200,
+    height: 60,
   },
   header: {
     marginBottom: spacing.lg,

@@ -13,7 +13,6 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
   pick,
-  keepLocalCopy,
   types as DocumentPickerTypes,
 } from '@react-native-documents/picker';
 import RNFS from 'react-native-fs';
@@ -121,37 +120,23 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
         .toLowerCase();
       const filename = `${sanitizedTitle}_deck_${Date.now()}.json`;
 
-      // 3. Pedir permissão (Android 10+)
-      if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          {
-            title: 'Permissão de Armazenamento',
-            message: 'MindinLine precisa salvar o arquivo exportado',
-            buttonPositive: 'OK',
-          }
-        );
-
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          throw new Error('Permissão de armazenamento negada');
-        }
-      }
-
-      // 4. Salvar em Downloads
-      const path = `${RNFS.DownloadDirectoryPath}/${filename}`;
+      // 3. Salvar em Documents (não precisa permissão especial)
+      const path = `${RNFS.DocumentDirectoryPath}/${filename}`;
       await RNFS.writeFile(path, deckData, 'utf8');
 
-      // 5. Sucesso
-      Alert.alert(
-        'Deck Exportado!',
-        `Deck "${deck.title}" salvo em:\nDownloads/${filename}\n\n${deck.totalCards} cards exportados`,
-        [{ text: 'OK' }]
-      );
+      // 4. Compartilhar usando Share API (mais compatível que salvar diretamente)
+      await Share.share({
+        title: `Exportar ${deck.title}`,
+        message: `Deck exportado: ${deck.title} (${deck.totalCards} cards)`,
+        url: `file://${path}`,
+      });
 
       console.log('Deck exportado:', { deckId, filename, path });
     } catch (error: any) {
       console.error('Erro ao exportar deck:', error);
-      Alert.alert('Erro', error.message || 'Não foi possível exportar o deck');
+      if (error.message !== 'User did not share') {
+        Alert.alert('Erro', 'Não foi possível exportar o deck');
+      }
     } finally {
       setExporting(false);
     }
@@ -162,34 +147,33 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
     try {
       setImporting(true);
 
-      // 1. Pick retorna ARRAY agora (API v11)
-      const [file] = await pick({
+      // 1. Escolher arquivo
+      const result = await pick({
         type: [DocumentPickerTypes.allFiles],
+        copyTo: 'cachesDirectory',
       });
 
-      // 2. Fazer cópia local explicitamente
-      const localCopyResult = await keepLocalCopy({
-        files: [{
-          uri: file.uri,
-          fileName: file.name || 'imported-deck.json',
-        }],
-        destination: 'cachesDirectory',
-      });
-
-      // 3. Ler da cópia local
-      const localCopy = localCopyResult[0];
-      if (localCopy.status === 'error') {
-        throw new Error(localCopy.copyError || 'Erro ao fazer cópia local');
+      if (!result || result.length === 0) {
+        return;
       }
-      const fileContent = await RNFS.readFile(localCopy.sourceUri, 'utf8');
 
-      // 4. Validar estrutura antes de importar
+      const file = result[0];
+
+      // 2. Ler arquivo (usar fileCopyUri se disponível)
+      const fileUri = file.fileCopyUri || file.uri;
+
+      // Remover prefixo file:// se existir
+      const filePath = fileUri.replace('file://', '');
+
+      const fileContent = await RNFS.readFile(filePath, 'utf8');
+
+      // 3. Validar estrutura antes de importar
       const data = JSON.parse(fileContent);
       if (!data.version || !data.deck) {
-        throw new Error('Arquivo inválido ou corrompido');
+        throw new Error('Arquivo inválido. Certifique-se de que é um deck exportado do MindinLine.');
       }
 
-      // 5. Importar
+      // 4. Importar
       await importDeck(fileContent);
 
       Alert.alert(
@@ -204,13 +188,13 @@ const DeckDetailScreen = ({ route, navigation }: any) => {
       );
     } catch (error: any) {
       // Usuário cancelou
-      if (error.message === 'User canceled document picker') {
+      if (error.message?.includes('cancel')) {
         return;
       }
 
       console.error('Erro ao importar deck:', error);
       Alert.alert(
-        'Erro',
+        'Erro ao Importar',
         error.message || 'Não foi possível importar o deck. Verifique se o arquivo é válido.'
       );
     } finally {
